@@ -99,14 +99,11 @@ export function MainContent() {
 
           {/* Conversion Options */}
           <div className="bg-card rounded-lg border border-border p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <h3 className="text-lg font-medium">Conversion Options</h3>
-              <Button variant="ghost" size="sm" className="text-muted-foreground">
-                <span className="text-xs">Advanced Options</span>
-              </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Quality */}
               <div>
                 <label className="text-sm font-medium text-foreground/80 mb-2 block">Quality</label>
@@ -137,51 +134,9 @@ export function MainContent() {
                 </Select>
               </div>
 
-              {/* Speed */}
-              <div>
-                <label className="text-sm font-medium text-foreground/80 mb-2 block">Speed</label>
-                <Select defaultValue="normal">
-                  <SelectTrigger className="bg-input border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="fast">Fast</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="slow">High Quality</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
             </div>
 
-            {/* Advanced Options */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="trim-silence" className="border-border" />
-                  <label htmlFor="trim-silence" className="text-sm text-foreground/80">
-                    Trim Silence
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="normalize-audio" className="border-border" />
-                  <label htmlFor="normalize-audio" className="text-sm text-foreground/80">
-                    Normalize Audio
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="add-metadata" className="border-border" defaultChecked />
-                  <label htmlFor="add-metadata" className="text-sm text-foreground/80">
-                    Add Metadata
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="auto-download" className="border-border" />
-                  <label htmlFor="auto-download" className="text-sm text-foreground/80">
-                    Auto Download
-                  </label>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Recent Conversions */}
