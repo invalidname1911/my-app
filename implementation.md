@@ -123,9 +123,9 @@ curl -L "http://localhost:3000/api/jobs/<jobId>?download=1" -o output.mp4
 ## File Checklist for Agent
 - [x] Create `temp/` and add to `.gitignore` if missing
 - [x] Add `.env.local` with `TEMP_DIR` and `MAX_FILE_SIZE_MB`
-- [ ] Add `lib/file.ts`
-- [ ] Add `lib/presets.ts`
-- [ ] Add `lib/jobs.ts`
+- [x] Add `lib/file.ts`
+- [x] Add `lib/presets.ts`
+- [x] Add `lib/jobs.ts`
 - [ ] Add `lib/ffmpeg.ts`
 - [ ] Add `app/api/health/route.ts`
 - [ ] Add `app/api/upload/route.ts`
@@ -146,9 +146,9 @@ When you’re ready, ask me to scaffold these files and I’ll implement them as
 ## Progress Tracker
 - [x] 1) Dependencies — install `fluent-ffmpeg` and `ffmpeg-static`
 - [x] 2) Temp Directory & Env — create `temp/`, add to `.gitignore`, add `.env.local`
-- [ ] 3) Lib: File Helpers (`lib/file.ts`)
-- [ ] 4) Lib: Presets (`lib/presets.ts`)
-- [ ] 5) Lib: Jobs (`lib/jobs.ts`)
+- [x] 3) Lib: File Helpers (`lib/file.ts`)
+- [x] 4) Lib: Presets (`lib/presets.ts`)
+- [x] 5) Lib: Jobs (`lib/jobs.ts`)
 - [ ] 6) Lib: FFmpeg Wrapper (`lib/ffmpeg.ts`)
 - [ ] 7) API: Health (`app/api/health/route.ts`)
 - [ ] 8) API: Upload (`app/api/upload/route.ts`)
