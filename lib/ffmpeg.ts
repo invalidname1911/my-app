@@ -3,9 +3,10 @@ import { promises as fs } from 'fs';
 import { createOutputPath } from './file';
 import { getPreset, getAudioBitrate } from './presets';
 import { FfprobeData } from '@ts-ffmpeg/fluent-ffmpeg';
+import ffmpegStatic from 'ffmpeg-static';
 
-// Set the path to the local FFmpeg binary
-const FFMPEG_PATH = process.env.FFMPEG_PATH || './bin/ffmpeg.exe';
+// Set the path to the FFmpeg binary - use ffmpeg-static if available, fallback to local binary
+const FFMPEG_PATH = ffmpegStatic || process.env.FFMPEG_PATH || './bin/ffmpeg.exe';
 Ffmpeg.setFfmpegPath(FFMPEG_PATH);
 
 /**

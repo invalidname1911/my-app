@@ -7,9 +7,11 @@
 
 const Ffmpeg = require('@ts-ffmpeg/fluent-ffmpeg');
 const { promises: fs } = require('fs');
+const ffmpegStatic = require('ffmpeg-static');
 
-// Set the path to the local FFmpeg binary
-Ffmpeg.setFfmpegPath('../bin/ffmpeg.exe');
+// Set the path to the FFmpeg binary - use ffmpeg-static if available, fallback to local binary
+const FFMPEG_PATH = ffmpegStatic || process.env.FFMPEG_PATH || '../bin/ffmpeg.exe';
+Ffmpeg.setFfmpegPath(FFMPEG_PATH);
 
 async function testFFmpegPackage() {
   console.log('🧪 Testing @ts-ffmpeg/fluent-ffmpeg package...\n');
@@ -19,7 +21,8 @@ async function testFFmpegPackage() {
     console.log('1️⃣  Testing package import and FFmpeg path setup...');
     if (Ffmpeg) {
       console.log('✅ Package imported successfully!');
-      console.log('✅ FFmpeg path set to local binary!');
+      console.log(`✅ FFmpeg path set to: ${FFMPEG_PATH}`);
+      console.log(`✅ FFmpeg source: ${ffmpegStatic ? 'ffmpeg-static' : 'local-binary'}`);
     } else {
       console.log('❌ Package import failed');
       return;
@@ -31,7 +34,7 @@ async function testFFmpegPackage() {
       // Try to run a simple FFmpeg command to verify it's working
       const { spawn } = require('child_process');
       const path = require('path');
-      const ffmpegProcess = spawn(path.resolve(__dirname, '../bin/ffmpeg.exe'), ['-version']);
+      const ffmpegProcess = spawn(FFMPEG_PATH, ['-version']);
 
       ffmpegProcess.on('error', (err) => {
         console.log('❌ FFmpeg binary not accessible:', err.message);
