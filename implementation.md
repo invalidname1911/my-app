@@ -17,7 +17,7 @@ Use this file to drive the agent to implement a minimal, working MVP: upload a f
 ## Task Plan
 
 1) Dependencies
-- Run: `pnpm add fluent-ffmpeg ffmpeg-static`
+- Run: `pnpm add @ts-ffmpeg/fluent-ffmpeg ffmpeg-static`
 - Ensure TypeScript interop is fine (tsconfig `esModuleInterop: true`).
 
 2) Temp Directory & Env
@@ -126,7 +126,7 @@ curl -L "http://localhost:3000/api/jobs/<jobId>?download=1" -o output.mp4
 - [x] Add `lib/file.ts`
 - [x] Add `lib/presets.ts`
 - [x] Add `lib/jobs.ts`
-- [ ] Add `lib/ffmpeg.ts`
+- [x] Add `lib/ffmpeg.ts`
 - [ ] Add `app/api/health/route.ts`
 - [ ] Add `app/api/upload/route.ts`
 - [ ] Add `app/api/convert/route.ts`
@@ -144,12 +144,12 @@ curl -L "http://localhost:3000/api/jobs/<jobId>?download=1" -o output.mp4
 When you’re ready, ask me to scaffold these files and I’ll implement them as per this guide.
 
 ## Progress Tracker
-- [x] 1) Dependencies — install `fluent-ffmpeg` and `ffmpeg-static`
+- [x] 1) Dependencies — install `@ts-ffmpeg/fluent-ffmpeg` and `ffmpeg-static`
 - [x] 2) Temp Directory & Env — create `temp/`, add to `.gitignore`, add `.env.local`
 - [x] 3) Lib: File Helpers (`lib/file.ts`)
 - [x] 4) Lib: Presets (`lib/presets.ts`)
 - [x] 5) Lib: Jobs (`lib/jobs.ts`)
-- [ ] 6) Lib: FFmpeg Wrapper (`lib/ffmpeg.ts`)
+- [x] 6) Lib: FFmpeg Wrapper (`lib/ffmpeg.ts`)
 - [ ] 7) API: Health (`app/api/health/route.ts`)
 - [ ] 8) API: Upload (`app/api/upload/route.ts`)
 - [ ] 9) API: Convert (`app/api/convert/route.ts`)
