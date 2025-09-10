@@ -4,10 +4,35 @@ import { createOutputPath } from './file';
 import { getPreset, getAudioBitrate } from './presets';
 import { FfprobeData } from '@ts-ffmpeg/fluent-ffmpeg';
 import ffmpegStatic from 'ffmpeg-static';
+import path from 'path';
 
-// Set the path to the FFmpeg binary - use ffmpeg-static if available, fallback to local binary
-const FFMPEG_PATH = ffmpegStatic || process.env.FFMPEG_PATH || './bin/ffmpeg.exe';
-Ffmpeg.setFfmpegPath(FFMPEG_PATH);
+// Resolve a robust ffmpeg path:
+// 1) Respect explicit env var if it exists and is a file
+// 2) Use ffmpeg-static path if it points to an existing file (scripts may be disabled)
+// 3) Fallback to repo local binaries (Windows .exe or POSIX)
+// 4) Otherwise, rely on system PATH (do not set)
+function resolveFfmpegPath(): string | null {
+  try {
+    const fsSync = require('fs') as typeof import('fs');
+    const candidates = [
+      process.env.FFMPEG_PATH,
+      (ffmpegStatic as unknown as string) || undefined,
+      path.join(process.cwd(), 'bin', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'),
+    ].filter(Boolean) as string[];
+
+    for (const p of candidates) {
+      try {
+        if (fsSync.existsSync(p)) return p;
+      } catch {}
+    }
+  } catch {}
+  return null;
+}
+
+const RESOLVED_FFMPEG_PATH = resolveFfmpegPath();
+if (RESOLVED_FFMPEG_PATH) {
+  Ffmpeg.setFfmpegPath(RESOLVED_FFMPEG_PATH);
+}
 
 /**
  * Convert a video file to MP4 format
@@ -124,7 +149,7 @@ export async function getMediaInfo(inputPath: string): Promise<FfprobeData> {
  */
 export async function validateFFmpeg(): Promise<boolean> {
   return new Promise((resolve) => {
-    const ffmpegPath = FFMPEG_PATH;
+    const ffmpegPath = RESOLVED_FFMPEG_PATH;
 
     if (!ffmpegPath) {
       resolve(false);

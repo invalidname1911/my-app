@@ -11,7 +11,7 @@ export const presets = {
     vcodec: 'libx264',    // H.264 video codec
     acodec: 'aac',        // AAC audio codec
     crf: 23,              // Constant Rate Factor (lower = higher quality)
-    scale: '1280:720'     // 720p resolution
+    scale: '1280x720'     // 720p resolution
   },
   
   /**
@@ -22,7 +22,7 @@ export const presets = {
     vcodec: 'libx264',    // H.264 video codec
     acodec: 'aac',        // AAC audio codec
     crf: 26,              // Higher CRF for smaller file size
-    scale: '854:480'      // 480p resolution
+    scale: '854x480'      // 480p resolution
   }
 } as const;
 

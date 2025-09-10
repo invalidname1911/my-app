@@ -151,8 +151,9 @@ When you’re ready, ask me to scaffold these files and I’ll implement them as
 - [x] 5) Lib: Jobs (`lib/jobs.ts`)
 - [x] 6) Lib: FFmpeg Wrapper (`lib/ffmpeg.ts`)
 - [x] 7) API: Health (`app/api/health/route.ts`)
-- [ ] 8) API: Upload (`app/api/upload/route.ts`)
+- [x] 8) API: Upload (`app/api/upload/route.ts`)
 - [ ] 9) API: Convert (`app/api/convert/route.ts`)
+- [x] 9) API: Convert (`app/api/convert/route.ts`)
 - [ ] 10) API: Jobs (`app/api/jobs/[id]/route.ts`)
 - [ ] 11) Basic Cleanup — scheduled old file cleanup
 - [ ] 12) Developer Experience — curl examples verified locally
