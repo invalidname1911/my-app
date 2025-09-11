@@ -196,17 +196,27 @@ export function getJobStats() {
 
 // Cleanup scheduler for production
 if (process.env.NODE_ENV === 'production') {
-  // Run cleanup every hour
-  setInterval(() => {
-    cleanupOldJobs(24); // Remove jobs older than 24 hours
-    cleanupOldFiles(24); // Remove files older than 24 hours
-  }, 60 * 60 * 1000); // Every 60 minutes
-}
+  const cleanup = async () => {
+    console.log('Running cleanup task...');
+    
+    const cleanedJobs = cleanupOldJobs(24);
+    if (cleanedJobs > 0) {
+      console.log(`Cleaned up ${cleanedJobs} old jobs.`);
+    }
+    
+    const cleanedFiles = await cleanupOldFiles(24);
+    if (cleanedFiles > 0) {
+      console.log(`Cleaned up ${cleanedFiles} old files.`);
+    }
+    
+    console.log('Cleanup task finished.');
+  };
 
-// Initial cleanup on module load
-if (process.env.NODE_ENV === 'production') {
-  setTimeout(() => {
-    cleanupOldJobs(24);
-    cleanupOldFiles(24);
-  }, 5000); // After 5 seconds
+  // Run cleanup every hour
+  setInterval(cleanup, 60 * 60 * 1000);
+
+  // Initial cleanup on module load after a short delay
+  setTimeout(cleanup, 5000);
+  
+  console.log('Production cleanup scheduler initialized.');
 }

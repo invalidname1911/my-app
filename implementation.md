@@ -154,8 +154,8 @@ When you’re ready, ask me to scaffold these files and I’ll implement them as
 - [x] 8) API: Upload (`app/api/upload/route.ts`)
 - [x] 9) API: Convert (`app/api/convert/route.ts`)
 - [ ] 10) API: Jobs (`app/api/jobs/[id]/route.ts`)
-- [ ] 11) Basic Cleanup — scheduled old file cleanup
-- [ ] 12) Developer Experience — curl examples verified locally
+- [x] 11) Basic Cleanup — scheduled old file cleanup
+- [x] 12) Developer Experience — curl examples verified locally
 - [ ] 13) Optional Phase 2: YouTube (feature-flagged)
 
 - [ ] MVP end-to-end verified (upload → convert → poll → download)

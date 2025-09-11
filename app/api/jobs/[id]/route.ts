@@ -7,7 +7,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
+  const id = params.id;
   const { searchParams } = new URL(req.url);
   const download = searchParams.get('download');
 
