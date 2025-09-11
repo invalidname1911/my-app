@@ -10,7 +10,6 @@ Project overview
 
 Commands
 - Install dependencies: pnpm install
-- Start dev server (http://localhost:3000): pnpm dev
 - Build production bundle: pnpm build
 - Run production server (after build): pnpm start
 - Lint (Next.js ESLint integration): pnpm lint
@@ -42,4 +41,5 @@ Notes for working in this repo
 - Use pnpm for all install and run commands.
 - Because the build is configured to ignore ESLint and TypeScript errors, run pnpm lint and pnpm exec tsc --noEmit during development to catch issues early.
 - UI primitives under components/ui are shared building blocks. Favor composing them in higher-level components rather than duplicating styles.
-
+- Do not run pnpm dev server, let user run it.
+- Whenever you need to install packages, use context7 MCP to gather context first.
