@@ -153,9 +153,23 @@ When you’re ready, ask me to scaffold these files and I’ll implement them as
 - [x] 7) API: Health (`app/api/health/route.ts`)
 - [x] 8) API: Upload (`app/api/upload/route.ts`)
 - [x] 9) API: Convert (`app/api/convert/route.ts`)
-- [ ] 10) API: Jobs (`app/api/jobs/[id]/route.ts`)
+- [x] 10) API: Jobs (`app/api/jobs/[id]/route.ts`)
 - [x] 11) Basic Cleanup — scheduled old file cleanup
 - [x] 12) Developer Experience — curl examples verified locally
 - [ ] 13) Optional Phase 2: YouTube (feature-flagged)
+
+### Phase 2 Progress Tracker — YouTube → MP3
+- [ ] 1) Install dependency — `pnpm add ytdl-core`
+- [ ] 2) Create `lib/youtube.ts` with `downloadYouTubeAudio(url, outPath, onProgress)`
+- [ ] 3) Validate allowed hosts (`youtube.com`, `youtu.be`) and sanitize URL
+- [ ] 4) Implement `POST /api/youtube` (download-only → returns `{ fileId }`)
+- [ ] 5) Integrate with file helpers (`createTempPath`, `resolveTempPath`)
+- [ ] 6) Implement `POST /api/youtube-to-mp3` (one-shot job → returns `{ jobId }`)
+- [ ] 7) Map progress: download 0–50, ffmpeg 50–100; update in-memory job store
+- [ ] 8) Handle common error cases (age-restricted/region-locked/live) with clear messages
+- [ ] 9) Add curl examples to this doc for both endpoints
+- [ ] 10) Manual test with sample URL; verify output MP3 and headers via `/api/jobs/[id]?download=1`
+- [ ] 11) Guard behind feature flag in routes; return 404/403 if disabled
+- [ ] 12) Update docs (README/this file) with limitations and maintenance notes
 
 - [ ] MVP end-to-end verified (upload → convert → poll → download)
