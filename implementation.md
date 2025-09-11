@@ -159,9 +159,9 @@ When you’re ready, ask me to scaffold these files and I’ll implement them as
 - [ ] 13) Optional Phase 2: YouTube (feature-flagged)
 
 ### Phase 2 Progress Tracker — YouTube → MP3
-- [ ] 1) Install dependency — `pnpm add ytdl-core`
-- [ ] 2) Create `lib/youtube.ts` with `downloadYouTubeAudio(url, outPath, onProgress)`
-- [ ] 3) Validate allowed hosts (`youtube.com`, `youtu.be`) and sanitize URL
+- [x] 1) Install dependency — `pnpm add ytdl-core`
+- [x] 2) Create `lib/youtube.ts` with `downloadYouTubeAudio(url, outPath, onProgress)`
+- [x] 3) Validate allowed hosts (`youtube.com`, `youtu.be`) and sanitize URL
 - [ ] 4) Implement `POST /api/youtube` (download-only → returns `{ fileId }`)
 - [ ] 5) Integrate with file helpers (`createTempPath`, `resolveTempPath`)
 - [ ] 6) Implement `POST /api/youtube-to-mp3` (one-shot job → returns `{ jobId }`)

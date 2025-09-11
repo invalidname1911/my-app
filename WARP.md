@@ -42,4 +42,5 @@ Notes for working in this repo
 - Because the build is configured to ignore ESLint and TypeScript errors, run pnpm lint and pnpm exec tsc --noEmit during development to catch issues early.
 - UI primitives under components/ui are shared building blocks. Favor composing them in higher-level components rather than duplicating styles.
 - Do not run pnpm dev server, let user run it.
-- Whenever you need to install packages, use context7 MCP to gather context first.
+- Whenever you need to install / use any new packages, use context7 MCP to gather context first.
+- Run lint when you finished editing / creating files.
