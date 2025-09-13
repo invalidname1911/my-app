@@ -35,7 +35,6 @@ async function runTest(name: string, testFn: () => Promise<void>) {
     throw error; // re-throw to fail main process
   }
 }
-}
 
 async function main() {
   await setup();
