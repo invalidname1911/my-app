@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import { join, extname } from 'path';
 import { randomBytes } from 'crypto';
 
-const TEMP_DIR = process.env.TEMP_DIR || './temp';
+const TEMP_DIR = join(process.cwd(), 'temp');
 
 /**
  * Ensures the temporary directory exists
@@ -32,9 +32,8 @@ export async function createTempPath(originalName: string): Promise<{
   const fileId = randomBytes(16).toString('hex');
   const extension = extname(originalName);
   const filename = `${fileId}${extension}`;
-  const relPath = join(TEMP_DIR, filename);
-  const absPath = join(process.cwd(), relPath);
-  
+  const absPath = join(TEMP_DIR, filename);
+  const relPath = join('temp', filename);
   return {
     fileId,
     absPath,
@@ -54,7 +53,7 @@ export function resolveTempPath(fileId: string): string | null {
     const matchingFile = files.find((file: string) => file.startsWith(fileId));
     
     if (matchingFile) {
-      return join(process.cwd(), TEMP_DIR, matchingFile);
+      return join(TEMP_DIR, matchingFile);
     }
     
     return null;
@@ -103,5 +102,5 @@ export async function cleanupOldFiles(maxAgeHours: number = 24): Promise<number>
 export async function createOutputPath(fileId: string, targetFormat: string): Promise<string> {
   await ensureTempDir();
   const outputFilename = `${fileId}_output.${targetFormat}`;
-  return join(process.cwd(), TEMP_DIR, outputFilename);
+  return join(TEMP_DIR, outputFilename);
 }

@@ -175,6 +175,13 @@ export function cleanupOldJobs(maxAgeHours: number = 24): number {
 }
 
 /**
+ * Clear all jobs (for testing purposes)
+ */
+export function clearAllJobs(): void {
+  jobs.clear();
+}
+
+/**
  * Get job statistics
  * @returns Object with job counts by status
  */

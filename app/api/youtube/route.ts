@@ -79,8 +79,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeDownlo
         size: fileSize
       };
 
-    } catch (downloadError: any) {
-      console.error('YouTube download error:', downloadError);
+} catch (downloadError: any) {
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('YouTube download error:', downloadError);
+      }
       
       // Handle specific error cases
       if (downloadError.message?.includes('Video unavailable')) {

@@ -163,13 +163,33 @@ When you’re ready, ask me to scaffold these files and I’ll implement them as
 - [x] 2) Create `lib/youtube.ts` with `downloadYouTubeAudio(url, outPath, onProgress)`
 - [x] 3) Validate allowed hosts (`youtube.com`, `youtu.be`) and sanitize URL
 - [x] 4) Implement `POST /api/youtube` (download-only → returns `{ fileId }`)
-- [ ] 5) Integrate with file helpers (`createTempPath`, `resolveTempPath`)
-- [ ] 6) Implement `POST /api/youtube-to-mp3` (one-shot job → returns `{ jobId }`)
-- [ ] 7) Map progress: download 0–50, ffmpeg 50–100; update in-memory job store
-- [ ] 8) Handle common error cases (age-restricted/region-locked/live) with clear messages
-- [ ] 9) Add curl examples to this doc for both endpoints
+- [x] 5) Integrate with file helpers (`createTempPath`, `resolveTempPath`)
+- [x] 6) Implement `POST /api/youtube-to-mp3` (one-shot job → returns `{ jobId }`)
+- [x] 7) Map progress: download 0–50, ffmpeg 50–100; update in-memory job store
+- [x] 8) Handle common error cases (age-restricted/region-locked/live) with clear messages
+- [x] 9) Add curl examples to this doc for both endpoints
 - [ ] 10) Manual test with sample URL; verify output MP3 and headers via `/api/jobs/[id]?download=1`
 - [ ] 11) Guard behind feature flag in routes; return 404/403 if disabled
 - [ ] 12) Update docs (README/this file) with limitations and maintenance notes
+
+## YouTube to MP3 Curl Examples
+
+```bash
+# Download YouTube video (returns fileId)
+curl -X POST http://localhost:3000/api/youtube \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}'
+
+# One-shot YouTube to MP3 conversion (returns jobId)
+curl -X POST http://localhost:3000/api/youtube-to-mp3 \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ", "bitrate":192}'
+
+# Poll conversion status
+curl http://localhost:3000/api/jobs/<jobId>
+
+# Download converted MP3 when done
+curl -L "http://localhost:3000/api/jobs/<jobId>?download=1" -o output.mp3
+```
 
 - [ ] MVP end-to-end verified (upload → convert → poll → download)

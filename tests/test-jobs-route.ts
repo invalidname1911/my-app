@@ -20,14 +20,21 @@ function createMockRequest(url: string): NextRequest {
 }
 
 async function runTest(name: string, testFn: () => Promise<void>) {
-  console.log(`\n🧪 Running: ${name}`);
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`\n🧪 Running: ${name}`);
+  }
   try {
     await testFn();
-    console.log(`✅ Passed: ${name}`);
+    if (process.env.NODE_ENV !== 'test') {
+      console.log(`✅ Passed: ${name}`);
+    }
   } catch (error) {
-    console.error(`❌ Failed: ${name}`, error);
-    throw error; // re-throw to fail the main process
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(`❌ Failed: ${name}`, error);
+    }
+    throw error; // re-throw to fail main process
   }
+}
 }
 
 async function main() {
@@ -135,7 +142,9 @@ async function main() {
   } finally {
     await cleanup();
   }
-  console.log('\n🎉 All job route tests passed!');
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('\n🎉 All job route tests passed!');
+  }
 }
 
 main().catch(() => process.exit(1));
