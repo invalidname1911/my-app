@@ -24,6 +24,7 @@ export interface Job {
   error?: string;
   target: 'mp4' | 'mp3';
   preset?: 'web' | 'mobile';
+  bitrate?: number; // For MP3 conversion
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,26 +75,29 @@ export function updateJob(id: string, patch: Partial<Job>): void {
  * @param inputPath Path to input file
  * @param target Target format (mp4 or mp3)
  * @param preset Optional preset for video conversion
+ * @param bitrate Optional bitrate for MP3 conversion
  * @returns New job object
  */
 export function createJob(
   inputPath: string,
   target: 'mp4' | 'mp3',
-  preset?: 'web' | 'mobile'
+  preset?: 'web' | 'mobile',
+  bitrate?: number
 ): Job {
   const jobId = randomBytes(16).toString('hex');
   const now = new Date();
-  
+
   const job: Job = {
     id: jobId,
     status: 'queued',
     inputPath,
     target,
     preset,
+    bitrate,
     createdAt: now,
     updatedAt: now
   };
-  
+
   setJob(job);
   return job;
 }
