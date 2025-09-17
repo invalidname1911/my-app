@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Download, Play, Clock, FileAudio, Trash2 } from "lucide-react"
+import { Download, Clock, FileAudio, Trash2, ExternalLink, Copy, Search } from "lucide-react"
 import { Button } from "./ui/button"
+import { Input } from "./ui/input"
 import { useToast } from "@/hooks/use-toast"
 
 interface ConversionItem {
@@ -21,6 +22,7 @@ const STORAGE_KEY = 'youtube-conversions'
 
 // Export function to add conversions from outside
 export const addToConversionHistory = (conversion: Omit<ConversionItem, 'id' | 'convertedAt'>) => {
+  console.log('Adding conversion to history:', conversion)
   const stored = localStorage.getItem(STORAGE_KEY)
   let history: ConversionItem[] = []
 
@@ -40,23 +42,54 @@ export const addToConversionHistory = (conversion: Omit<ConversionItem, 'id' | '
 
   history = [newConversion, ...history.slice(0, 9)] // Keep only last 10 items
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+  
+  // Trigger a custom event to update the UI
+  window.dispatchEvent(new CustomEvent('conversionHistoryUpdated', {
+    detail: { history }
+  }))
 }
 
 export function ConversionHistory() {
   const [history, setHistory] = useState<ConversionItem[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
+
+  // Debug: log when history changes
+  useEffect(() => {
+    console.log('History state changed:', history)
+  }, [history])
 
   // Load history from localStorage on component mount
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        setHistory(parsed)
-      } catch (error) {
-        console.error('Error parsing conversion history:', error)
+    const loadHistory = () => {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      console.log('Loading history from localStorage:', stored)
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          console.log('Parsed history:', parsed)
+          setHistory(parsed)
+        } catch (error) {
+          console.error('Error parsing conversion history:', error)
+        }
+      } else {
+        console.log('No stored history found')
       }
     }
+
+    loadHistory()
+
+    // Listen for custom events to update history in real-time
+    const handleHistoryUpdate = (e: CustomEvent) => {
+      if (e.detail?.history) {
+        setHistory(e.detail.history)
+      } else {
+        loadHistory()
+      }
+    }
+
+    window.addEventListener('conversionHistoryUpdated', handleHistoryUpdate as EventListener)
+    return () => window.removeEventListener('conversionHistoryUpdated', handleHistoryUpdate as EventListener)
   }, [])
 
   // Save history to localStorage whenever it changes
@@ -95,6 +128,33 @@ export function ConversionHistory() {
       description: "All conversion history has been cleared.",
     })
   }
+
+  // Function to copy original URL to clipboard
+  const copyOriginalUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast({
+        title: "URL Copied",
+        description: "The original YouTube URL has been copied to your clipboard.",
+      })
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy URL to clipboard.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Function to open original YouTube video
+  const openOriginalVideo = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  // Filter history based on search term
+  const filteredHistory = history.filter(item =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   // Function to re-download a previous conversion
   const reDownloadConversion = async (jobId: string) => {
@@ -142,32 +202,56 @@ export function ConversionHistory() {
 
   return (
     <div className="bg-card rounded-lg border border-border p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-medium">Recent Conversions</h3>
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Recent Conversions</h3>
+          {history.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={clearHistory}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear All
+            </Button>
+          )}
+        </div>
+        
         {history.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={clearHistory}
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Clear All
-          </Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search conversions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-input border-border"
+            />
+          </div>
         )}
       </div>
 
       <div className="space-y-4">
-        {history.length > 0 ? history.map((item) => (
+        {history.length > 0 ? (
+          filteredHistory.length > 0 ? filteredHistory.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-4 p-4 bg-accent/30 rounded-lg border border-border/60"
+            className="flex items-center gap-4 p-4 bg-accent/30 rounded-lg border border-border/60 hover:bg-accent/50 transition-colors"
           >
-            <img
-              src={item.thumbnail || "/placeholder.svg"}
-              alt={item.title}
-              className="w-12 h-12 rounded-lg object-cover bg-zinc-700"
-            />
+            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-700">
+              <img
+                src={item.thumbnail || "/placeholder.svg"}
+                alt={item.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder.svg";
+                }}
+              />
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <FileAudio className="w-4 h-4 text-white/80" />
+              </div>
+            </div>
 
             <div className="flex-1 min-w-0">
               <h4 className="font-medium truncate">{item.title}</h4>
@@ -185,7 +269,25 @@ export function ConversionHistory() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => openOriginalVideo(item.url)}
+                title="Open original video"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => copyOriginalUrl(item.url)}
+                title="Copy original URL"
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -207,6 +309,13 @@ export function ConversionHistory() {
             </div>
           </div>
         )) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p>No conversions match your search</p>
+            <p className="text-sm mt-1">Try a different search term</p>
+          </div>
+        )
+        ) : (
           <div className="text-center py-12 text-muted-foreground">
             <FileAudio className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No conversions yet</p>

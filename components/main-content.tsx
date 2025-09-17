@@ -5,15 +5,24 @@ import { ChevronLeft, Sun, Moon, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+
 import { useTheme } from "next-themes"
 import { ConversionHistory, addToConversionHistory } from "@/components/conversion-history"
 import { useToast } from "@/hooks/use-toast"
 
+// Helper function to format file size
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
 export function MainContent() {
   const [url, setUrl] = useState("")
   const [isConverting, setIsConverting] = useState(false)
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const { toast } = useToast()
 
@@ -22,8 +31,8 @@ export function MainContent() {
   const [conversionProgress, setConversionProgress] = useState(0)
   const [conversionStatus, setConversionStatus] = useState<'idle' | 'starting' | 'downloading' | 'converting' | 'completed' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string>("")
-  const [videoInfo, setVideoInfo] = useState<{ title?: string; duration?: string } | null>(null)
-  const [selectedQuality, setSelectedQuality] = useState("192")
+  const [videoInfo, setVideoInfo] = useState<{ title?: string; duration?: string; thumbnail?: string } | null>(null)
+  const [selectedQuality, setSelectedQuality] = useState("320")
 
   // URL validation function
   const validateYouTubeUrl = useCallback((url: string): boolean => {
@@ -89,7 +98,8 @@ export function MainContent() {
   }, [])
 
   // Function to download the converted file
-  const downloadFile = useCallback(async (jobId: string) => {
+  const downloadFile = useCallback(async (jobId: string, originalUrl: string, videoData?: { title?: string; duration?: string; thumbnail?: string }) => {
+    console.log('downloadFile called with jobId:', jobId, 'originalUrl:', originalUrl, 'videoData:', videoData)
     try {
       const response = await fetch(`/api/jobs/${jobId}?download=1`)
 
@@ -110,14 +120,14 @@ export function MainContent() {
 
       // Create blob and download
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const blobUrl = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.style.display = 'none'
-      a.href = url
+      a.href = blobUrl
       a.download = filename
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(blobUrl)
       document.body.removeChild(a)
 
       toast({
@@ -125,15 +135,35 @@ export function MainContent() {
         description: "Your MP3 file has been downloaded successfully!",
       })
 
-      // Add to conversion history
-      if (videoInfo) {
-        addToConversionHistory({
-          title: videoInfo.title || 'YouTube Audio',
-          duration: videoInfo.duration || '',
+      // Add to conversion history with file size
+      if (videoData) {
+        // Get file size from the blob
+        const fileSize = blob.size
+        const fileSizeFormatted = formatFileSize(fileSize)
+
+        console.log('About to add to conversion history:', {
+          title: videoData.title || 'YouTube Audio',
+          duration: videoData.duration || '',
           quality: `${selectedQuality} kbps`,
-          url: url,
+          size: fileSizeFormatted,
+          thumbnail: videoData.thumbnail,
+          url: originalUrl,
           jobId: jobId,
         })
+
+        addToConversionHistory({
+          title: videoData.title || 'YouTube Audio',
+          duration: videoData.duration || '',
+          quality: `${selectedQuality} kbps`,
+          size: fileSizeFormatted,
+          thumbnail: videoData.thumbnail,
+          url: originalUrl, // Use the original YouTube URL
+          jobId: jobId,
+        })
+
+        console.log('Successfully added to conversion history!')
+      } else {
+        console.log('videoData is null, not adding to history')
       }
     } catch (error) {
       console.error('Error downloading file:', error)
@@ -143,7 +173,7 @@ export function MainContent() {
         variant: "destructive",
       })
     }
-  }, [toast])
+  }, [toast, selectedQuality])
 
   // Function to reset conversion state
   const resetConversion = useCallback(() => {
@@ -183,10 +213,10 @@ export function MainContent() {
     try {
       // Start the conversion
       const result = await startYouTubeConversion(url, parseInt(selectedQuality))
-      const { jobId, title, duration } = result
+      const { jobId, title, duration, thumbnail } = result
 
       setCurrentJobId(jobId)
-      setVideoInfo({ title, duration })
+      setVideoInfo({ title, duration, thumbnail })
       setConversionStatus('downloading')
 
       toast({
@@ -198,6 +228,7 @@ export function MainContent() {
       const pollInterval = setInterval(async () => {
         try {
           const status = await pollJobStatus(jobId)
+          console.log('Poll status result:', status)
 
           setConversionProgress(status.progress || 0)
 
@@ -209,13 +240,15 @@ export function MainContent() {
               setConversionStatus('converting')
             }
           } else if (status.status === 'done') {
+            console.log('Job completed! Status:', status)
             setConversionStatus('completed')
             setConversionProgress(100)
             clearInterval(pollInterval)
 
             // Auto-download after a short delay
             setTimeout(() => {
-              downloadFile(jobId)
+              console.log('About to call downloadFile with jobId:', jobId, 'and url:', url, 'videoInfo:', videoInfo)
+              downloadFile(jobId, url, videoInfo || undefined)
               resetConversion()
               setUrl("")
             }, 1000)
@@ -391,7 +424,7 @@ export function MainContent() {
               <div>
                 <label className="text-sm font-medium text-foreground/80 mb-2 block">Quality</label>
                 {mounted ? (
-                  <Select defaultValue="320">
+                  <Select value={selectedQuality} onValueChange={setSelectedQuality}>
                     <SelectTrigger className="bg-input border-border">
                       <SelectValue />
                     </SelectTrigger>
@@ -403,7 +436,7 @@ export function MainContent() {
                   </Select>
                 ) : (
                   <div className="bg-input border-border border rounded-md px-3 py-2 text-sm h-9 flex items-center">
-                    320 kbps (Recommended)
+                    {selectedQuality} kbps {selectedQuality === "320" ? "(Recommended)" : ""}
                   </div>
                 )}
               </div>
@@ -436,6 +469,7 @@ export function MainContent() {
 
           {/* Recent Conversions */}
           <ConversionHistory />
+
 
           {/* Help Section */}
           <div className="bg-card rounded-lg border border-border p-6">

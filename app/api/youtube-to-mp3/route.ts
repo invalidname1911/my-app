@@ -16,6 +16,7 @@ interface YouTubeToMp3Response {
   jobId: string;
   title?: string;
   duration?: string;
+  thumbnail?: string;
 }
 
 interface ErrorResponse {
@@ -33,9 +34,9 @@ const MAX_URL_LENGTH = 2048;
 export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3Response | ErrorResponse>> {
   const startTime = Date.now();
   const requestId = Math.random().toString(36).substring(2, 15);
-  
+
   console.log(`[${requestId}] YouTube to MP3 request started`);
-  
+
   try {
     // Check if YouTube feature is enabled
     if (process.env.ENABLE_YOUTUBE !== 'true') {
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
         { status: 400 }
       );
     }
-    
+
     // Validate required fields
     if (!body.url) {
       return NextResponse.json(
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
         { status: 400 }
       );
     }
-    
+
     if (typeof body.url !== 'string') {
       return NextResponse.json(
         { error: 'URL must be a string' },
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
 
     // Sanitize and validate URL
     const url = body.url.trim();
-    
+
     if (url.length === 0) {
       return NextResponse.json(
         { error: 'URL cannot be empty' },
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
 
     // Validate URL format - use both old regex and new validation for compatibility
     const youtubeUrlPattern = /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/i;
-    
+
     if (!youtubeUrlPattern.test(url)) {
       return NextResponse.json(
         { error: 'Invalid YouTube URL format' },
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
           { status: 400 }
         );
       }
-      
+
       if (body.bitrate < MIN_BITRATE || body.bitrate > MAX_BITRATE) {
         return NextResponse.json(
           { error: `Bitrate must be between ${MIN_BITRATE} and ${MAX_BITRATE} kbps` },
@@ -143,14 +144,15 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
     const bitrate = body.bitrate && body.bitrate > 0 ? body.bitrate : DEFAULT_BITRATE;
     console.log(`[${requestId}] Processing URL: ${sanitizedUrl}, Bitrate: ${bitrate}kbps`);
 
-    let videoInfo: { title?: string; duration?: string } = {};
-    
+    let videoInfo: { title?: string; duration?: string; thumbnail?: string } = {};
+
     try {
       // Get video info first for response using sanitized URL
       const info = await getYouTubeVideoInfo(sanitizedUrl);
       videoInfo = {
         title: info.title,
-        duration: info.duration
+        duration: info.duration,
+        thumbnail: `https://img.youtube.com/vi/${info.videoId}/mqdefault.jpg`
       };
       console.log(`[${requestId}] Video info retrieved: ${info.title} (${info.duration}s)`);
     } catch (infoError: any) {
@@ -160,11 +162,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
 
     // Create temp path for the intermediate download
     const tempInfo = await createTempPath('youtube-download.webm');
-    
+
     // Create job for tracking the entire process
     const job = createJob(tempInfo.absPath, 'mp3');
     console.log(`[${requestId}] Created job ${job.id}`);
-    
+
     // Create output path for final MP3
     const outputPath = await createOutputPath(job.id, 'mp3');
     updateJob(job.id, { outputPath });
@@ -173,7 +175,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
     (async () => {
       let tempFileExists = false;
       let outputFileExists = false;
-      
+
       try {
         updateJob(job.id, { status: 'running', progress: 0 });
 
@@ -217,10 +219,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
         if (process.env.NODE_ENV !== 'test') {
           console.error('YouTube to MP3 conversion error:', error);
         }
-        
+
         // Clean up files on error
         const cleanupPromises = [];
-        
+
         if (tempFileExists && fs.existsSync(tempInfo.absPath)) {
           cleanupPromises.push(
             new Promise<void>((resolve) => {
@@ -236,7 +238,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
             })
           );
         }
-        
+
         if (outputFileExists && fs.existsSync(outputPath)) {
           cleanupPromises.push(
             new Promise<void>((resolve) => {
@@ -259,17 +261,17 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
         // Handle specific error cases with more detailed messages
         let errorMessage = 'Conversion failed';
         let errorDetails = error.message || 'Unknown error';
-        
-        if (error.message?.toLowerCase().includes('video unavailable') || 
-            error.message?.toLowerCase().includes('private')) {
+
+        if (error.message?.toLowerCase().includes('video unavailable') ||
+          error.message?.toLowerCase().includes('private')) {
           errorMessage = 'Video is unavailable, private, or region-locked';
-        } else if (error.message?.toLowerCase().includes('age-restricted') || 
-                   error.message?.toLowerCase().includes('sign in')) {
+        } else if (error.message?.toLowerCase().includes('age-restricted') ||
+          error.message?.toLowerCase().includes('sign in')) {
           errorMessage = 'Video is age-restricted or requires sign-in';
         } else if (error.message?.toLowerCase().includes('live')) {
           errorMessage = 'Live streams are not supported';
-        } else if (error.message?.toLowerCase().includes('network') || 
-                   error.message?.toLowerCase().includes('timeout')) {
+        } else if (error.message?.toLowerCase().includes('network') ||
+          error.message?.toLowerCase().includes('timeout')) {
           errorMessage = 'Network error or timeout occurred';
         } else if (error.message?.toLowerCase().includes('format not supported')) {
           errorMessage = 'Video format is not supported';
@@ -277,12 +279,12 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
           errorMessage = error.message;
         }
 
-        updateJob(job.id, { 
-          status: 'error', 
+        updateJob(job.id, {
+          status: 'error',
           error: errorMessage,
           progress: 0
         });
-        
+
         if (process.env.NODE_ENV !== 'test') {
           console.error(`[${requestId}] Job ${job.id} failed: ${errorMessage}`, { details: errorDetails });
         }
@@ -291,7 +293,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
 
     const processingTime = Date.now() - startTime;
     console.log(`[${requestId}] Request completed in ${processingTime}ms, job ${job.id} created`);
-    
+
     return NextResponse.json({
       jobId: job.id,
       ...videoInfo
@@ -302,11 +304,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
     if (process.env.NODE_ENV !== 'test') {
       console.error(`[${requestId}] YouTube to MP3 API error after ${processingTime}ms:`, error);
     }
-    
+
     // Provide more specific error messages for common issues
     let errorMessage = 'Internal server error';
     let errorDetails = error.message || 'Unknown error occurred';
-    
+
     if (error.message?.toLowerCase().includes('timeout')) {
       errorMessage = 'Request timeout - please try again';
     } else if (error.message?.toLowerCase().includes('memory')) {
@@ -316,9 +318,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
     } else if (error.message?.toLowerCase().includes('permission')) {
       errorMessage = 'File system permission error';
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: errorMessage,
         details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
       },
