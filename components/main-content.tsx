@@ -107,31 +107,43 @@ export function MainContent() {
               {/* Quality */}
               <div>
                 <label className="text-sm font-medium text-foreground/80 mb-2 block">Quality</label>
-                <Select defaultValue="320">
-                  <SelectTrigger className="bg-input border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="128">128 kbps</SelectItem>
-                    <SelectItem value="192">192 kbps</SelectItem>
-                    <SelectItem value="320">320 kbps (Recommended)</SelectItem>
-                  </SelectContent>
-                </Select>
+                {mounted ? (
+                  <Select defaultValue="320">
+                    <SelectTrigger className="bg-input border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="128">128 kbps</SelectItem>
+                      <SelectItem value="192">192 kbps</SelectItem>
+                      <SelectItem value="320">320 kbps (Recommended)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="bg-input border-border border rounded-md px-3 py-2 text-sm h-9 flex items-center">
+                    320 kbps (Recommended)
+                  </div>
+                )}
               </div>
 
               {/* Format */}
               <div>
                 <label className="text-sm font-medium text-foreground/80 mb-2 block">Format</label>
-                <Select defaultValue="mp3">
-                  <SelectTrigger className="bg-input border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="mp3">MP3</SelectItem>
-                    <SelectItem value="wav">WAV</SelectItem>
-                    <SelectItem value="flac">FLAC</SelectItem>
-                  </SelectContent>
-                </Select>
+                {mounted ? (
+                  <Select defaultValue="mp3">
+                    <SelectTrigger className="bg-input border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="mp3">MP3</SelectItem>
+                      <SelectItem value="wav">WAV</SelectItem>
+                      <SelectItem value="flac">FLAC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="bg-input border-border border rounded-md px-3 py-2 text-sm h-9 flex items-center">
+                    MP3
+                  </div>
+                )}
               </div>
 
 
