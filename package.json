@@ -7,10 +7,12 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
+    "test": "jest",
     "test:convert": "tsx tests/test-convert-route.ts",
     "test:jobs": "tsx tests/test-jobs-route.ts"
   },
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -48,6 +50,7 @@
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
     "geist": "^1.3.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
@@ -63,16 +66,37 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "ytdl-core": "^4.11.5",
     "zod": "3.25.67"
   },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    }
+  },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.9",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.3.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "15.5.3",
+    "jest": "^30.1.3",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
+    "ts-jest": "^29.1.0",
     "tsx": "^4.20.5",
     "tw-animate-css": "1.3.3",
     "typescript": "^5.9.2"

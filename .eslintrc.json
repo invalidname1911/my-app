@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "env": {
+    "jest": true,
+    "node": true
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.ts", "tests/**/*.tsx"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
+}

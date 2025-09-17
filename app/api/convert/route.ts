@@ -12,18 +12,20 @@ interface ConvertBody {
   fileId?: string;
   target?: Target;
   preset?: Preset;
+  bitrate?: number; // For MP3 conversion
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as ConvertBody;
     const fileId = body.fileId?.trim();
-    const target = body.target as Target | undefined;
+    const target = (body.target as Target | undefined) ?? 'mp3'; // Default to MP3
     const preset = (body.preset as Preset | undefined) ?? 'web';
+    const bitrate = (body.bitrate as number | undefined) ?? 192; // Default MP3 bitrate
 
-    if (!fileId || !target) {
+    if (!fileId) {
       return NextResponse.json(
-        { error: 'Missing required fields: fileId, target' },
+        { error: 'Missing required field: fileId' },
         { status: 400 }
       );
     }
@@ -42,6 +44,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (target === 'mp3' && (bitrate < 64 || bitrate > 320)) {
+      return NextResponse.json(
+        { error: 'Invalid bitrate. Must be between 64 and 320 kbps' },
+        { status: 400 }
+      );
+    }
+
     const inputPath = resolveTempPath(fileId);
     if (!inputPath) {
       return NextResponse.json(
@@ -51,7 +60,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create job in queued state
-    const job = createJob(inputPath, target, target === 'mp4' ? preset : undefined);
+    const job = createJob(
+      inputPath,
+      target,
+      target === 'mp4' ? preset : undefined,
+      target === 'mp3' ? bitrate : undefined
+    );
 
     // Kick off processing asynchronously (non-blocking)
     (async () => {
@@ -68,8 +82,7 @@ export async function POST(request: NextRequest) {
             try { updateJob(job.id, { progress: Math.max(0, Math.min(100, Math.round(p))) }); } catch {}
           });
         } else {
-          const bitrateKbps = 192; // sensible default
-          await extractAudioMp3(inputPath, outputPath, bitrateKbps, (p) => {
+          await extractAudioMp3(inputPath, outputPath, bitrate, (p) => {
             try { updateJob(job.id, { progress: Math.max(0, Math.min(100, Math.round(p))) }); } catch {}
           });
         }

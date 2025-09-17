@@ -1,8 +1,7 @@
-import { promises as fs } from 'fs';
-import { createReadStream, stat } from 'fs';
+import { createReadStream, stat, readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync, mkdirSync } from 'fs';
 import { promisify } from 'util';
 import { randomBytes } from 'crypto';
-import { extname } from 'path';
+import { join } from 'path';
 import { cleanupOldFiles } from './file';
 
 const statAsync = promisify(stat);
@@ -24,15 +23,120 @@ export interface Job {
   error?: string;
   target: 'mp4' | 'mp3';
   preset?: 'web' | 'mobile';
+  bitrate?: number; // For MP3 conversion
   createdAt: Date;
   updatedAt: Date;
 }
 
-/**
- * In-memory job store
- * Note: This is ephemeral and will be lost on server restart
- */
-const jobs = new Map<string, Job>();
+type PersistedJob = Omit<Job, 'createdAt' | 'updatedAt'> & {
+  createdAt: string;
+  updatedAt: string;
+};
+
+const JOBS_DIR = join(process.cwd(), 'temp', 'jobs');
+const JOB_FILE_EXTENSION = '.json';
+const JOB_STORE_GLOBAL_KEY = '__ffmpeg_web_job_store__';
+
+type JobStoreState = {
+  map: Map<string, Job>;
+  initialized: boolean;
+};
+
+type GlobalWithJobStore = typeof globalThis & {
+  __ffmpeg_web_job_store__?: JobStoreState;
+};
+
+const globalForJobs = globalThis as GlobalWithJobStore;
+
+if (!globalForJobs[JOB_STORE_GLOBAL_KEY]) {
+  globalForJobs[JOB_STORE_GLOBAL_KEY] = {
+    map: new Map<string, Job>(),
+    initialized: false
+  };
+}
+
+const jobStoreState = globalForJobs[JOB_STORE_GLOBAL_KEY]!;
+
+if (!jobStoreState.initialized) {
+  loadPersistedJobs(jobStoreState.map);
+  jobStoreState.initialized = true;
+}
+
+const jobs = jobStoreState.map;
+
+function ensureJobsDirSync(): void {
+  if (!existsSync(JOBS_DIR)) {
+    mkdirSync(JOBS_DIR, { recursive: true });
+  }
+}
+
+function getJobFilePath(id: string): string {
+  return join(JOBS_DIR, `${id}${JOB_FILE_EXTENSION}`);
+}
+
+function serializeJob(job: Job): PersistedJob {
+  return {
+    ...job,
+    createdAt: job.createdAt.toISOString(),
+    updatedAt: job.updatedAt.toISOString()
+  };
+}
+
+function hydrateJob(data: PersistedJob): Job {
+  return {
+    ...data,
+    createdAt: new Date(data.createdAt),
+    updatedAt: new Date(data.updatedAt)
+  };
+}
+
+function loadPersistedJobs(store: Map<string, Job>): void {
+  try {
+    if (!existsSync(JOBS_DIR)) {
+      return;
+    }
+
+    const files = readdirSync(JOBS_DIR);
+    for (const file of files) {
+      if (!file.endsWith(JOB_FILE_EXTENSION)) {
+        continue;
+      }
+
+      const filePath = join(JOBS_DIR, file);
+      try {
+        const raw = readFileSync(filePath, 'utf8');
+        const persisted = JSON.parse(raw) as PersistedJob;
+        const job = hydrateJob(persisted);
+        store.set(job.id, job);
+      } catch (error) {
+        console.warn(`Failed to load job metadata from ${filePath}:`, error);
+      }
+    }
+  } catch (error) {
+    // Directory may not exist yet or be inaccessible; ignore
+  }
+}
+
+function persistJob(job: Job): void {
+  try {
+    ensureJobsDirSync();
+    const filePath = getJobFilePath(job.id);
+    writeFileSync(filePath, JSON.stringify(serializeJob(job)));
+  } catch (error) {
+    console.error(`Failed to persist job ${job.id}:`, error);
+  }
+}
+
+function deletePersistedJob(id: string): void {
+  try {
+    const filePath = getJobFilePath(id);
+    if (existsSync(filePath)) {
+      unlinkSync(filePath);
+    }
+  } catch (error) {
+    console.warn(`Failed to delete persisted job ${id}:`, error);
+  }
+}
 
 /**
  * Get a job by ID
@@ -40,7 +144,20 @@ const jobs = new Map<string, Job>();
  * @returns Job object or undefined if not found
  */
 export function getJob(id: string): Job | undefined {
-  return jobs.get(id);
+  const existingJob = jobs.get(id);
+  if (existingJob) {
+    return existingJob;
+  }
+
+  try {
+    const raw = readFileSync(getJobFilePath(id), 'utf8');
+    const persisted = JSON.parse(raw) as PersistedJob;
+    const job = hydrateJob(persisted);
+    jobs.set(id, job);
+    return job;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -50,6 +167,7 @@ export function getJob(id: string): Job | undefined {
 export function setJob(job: Job): void {
   job.updatedAt = new Date();
   jobs.set(job.id, job);
+  persistJob(job);
 }
 
 /**
@@ -58,7 +176,7 @@ export function setJob(job: Job): void {
  * @param patch Partial job data to update
  */
 export function updateJob(id: string, patch: Partial<Job>): void {
-  const existingJob = jobs.get(id);
+  const existingJob = getJob(id);
   if (existingJob) {
     const updatedJob = {
       ...existingJob,
@@ -66,6 +184,7 @@ export function updateJob(id: string, patch: Partial<Job>): void {
       updatedAt: new Date()
     };
     jobs.set(id, updatedJob);
+    persistJob(updatedJob);
   }
 }
 
@@ -74,26 +193,29 @@ export function updateJob(id: string, patch: Partial<Job>): void {
  * @param inputPath Path to input file
  * @param target Target format (mp4 or mp3)
  * @param preset Optional preset for video conversion
+ * @param bitrate Optional bitrate for MP3 conversion
  * @returns New job object
  */
 export function createJob(
   inputPath: string,
   target: 'mp4' | 'mp3',
-  preset?: 'web' | 'mobile'
+  preset?: 'web' | 'mobile',
+  bitrate?: number
 ): Job {
   const jobId = randomBytes(16).toString('hex');
   const now = new Date();
-  
+
   const job: Job = {
     id: jobId,
     status: 'queued',
     inputPath,
     target,
     preset,
+    bitrate,
     createdAt: now,
     updatedAt: now
   };
-  
+
   setJob(job);
   return job;
 }
@@ -167,11 +289,41 @@ export function cleanupOldJobs(maxAgeHours: number = 24): number {
   for (const [id, job] of jobs.entries()) {
     if (job.status === 'done' && job.updatedAt < cutoffTime) {
       jobs.delete(id);
+      deletePersistedJob(id);
       removedCount++;
     }
   }
   
   return removedCount;
+}
+
+/**
+ * Clear all jobs (for testing purposes)
+ */
+export function clearAllJobs(): void {
+  jobs.clear();
+
+  try {
+    if (!existsSync(JOBS_DIR)) {
+      return;
+    }
+
+    const files = readdirSync(JOBS_DIR);
+    for (const file of files) {
+      if (!file.endsWith(JOB_FILE_EXTENSION)) {
+        continue;
+      }
+
+      const filePath = join(JOBS_DIR, file);
+      try {
+        unlinkSync(filePath);
+      } catch (error) {
+        console.warn(`Failed to remove job metadata file ${filePath}:`, error);
+      }
+    }
+  } catch {
+    // Directory may not exist; nothing to clear
+  }
 }
 
 /**
