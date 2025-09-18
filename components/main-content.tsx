@@ -147,22 +147,26 @@ export function MainContent() {
         const fileSize = blob.size
         const fileSizeFormatted = formatFileSize(fileSize)
 
+        const historyTitle = dataToUse.title || 'YouTube Audio'
+        const historyDuration = dataToUse.duration || ''
+        const historyThumbnail = 'thumbnail' in dataToUse ? dataToUse.thumbnail : undefined
+
         console.log('About to add to conversion history:', {
-          title: dataToUse.title,
-          duration: dataToUse.duration,
+          title: historyTitle,
+          duration: historyDuration,
           quality: `${selectedQuality} kbps`,
           size: fileSizeFormatted,
-          thumbnail: dataToUse.thumbnail,
+          thumbnail: historyThumbnail,
           url: originalUrl,
           jobId: jobId,
         })
 
         addToConversionHistory({
-          title: dataToUse.title,
-          duration: dataToUse.duration,
+          title: historyTitle,
+          duration: historyDuration,
           quality: `${selectedQuality} kbps`,
           size: fileSizeFormatted,
-          thumbnail: dataToUse.thumbnail,
+          thumbnail: historyThumbnail,
           url: originalUrl, // Use the original YouTube URL
           jobId: jobId,
         })
