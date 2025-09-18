@@ -18,9 +18,12 @@ interface ConversionItem {
 }
 
 const STORAGE_KEY = 'youtube-conversions'
+const HISTORY_UPDATED_EVENT = 'conversion-history-updated'
 
 // Export function to add conversions from outside
 export const addToConversionHistory = (conversion: Omit<ConversionItem, 'id' | 'convertedAt'>) => {
+  if (typeof window === 'undefined') return
+
   const stored = localStorage.getItem(STORAGE_KEY)
   let history: ConversionItem[] = []
 
@@ -40,6 +43,8 @@ export const addToConversionHistory = (conversion: Omit<ConversionItem, 'id' | '
 
   history = [newConversion, ...history.slice(0, 9)] // Keep only last 10 items
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+
+  window.dispatchEvent(new CustomEvent(HISTORY_UPDATED_EVENT, { detail: history }))
 }
 
 export function ConversionHistory() {
@@ -48,19 +53,32 @@ export function ConversionHistory() {
 
   // Load history from localStorage on component mount
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        setHistory(parsed)
-      } catch (error) {
-        console.error('Error parsing conversion history:', error)
+    const loadHistory = () => {
+      if (typeof window === 'undefined') return
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setHistory(parsed)
+        } catch (error) {
+          console.error('Error parsing conversion history:', error)
+        }
+      } else {
+        setHistory([])
       }
+    }
+
+    loadHistory()
+    window.addEventListener(HISTORY_UPDATED_EVENT, loadHistory)
+
+    return () => {
+      window.removeEventListener(HISTORY_UPDATED_EVENT, loadHistory)
     }
   }, [])
 
   // Save history to localStorage whenever it changes
   useEffect(() => {
+    if (typeof window === 'undefined') return
     if (history.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
     }

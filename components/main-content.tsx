@@ -89,7 +89,10 @@ export function MainContent() {
   }, [])
 
   // Function to download the converted file
-  const downloadFile = useCallback(async (jobId: string) => {
+  const downloadFile = useCallback(async (
+    jobId: string,
+    meta?: { title?: string; duration?: string; quality?: string }
+  ) => {
     try {
       const response = await fetch(`/api/jobs/${jobId}?download=1`)
 
@@ -110,31 +113,34 @@ export function MainContent() {
 
       // Create blob and download
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const downloadUrl = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.style.display = 'none'
-      a.href = url
+      a.href = downloadUrl
       a.download = filename
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-
       toast({
         title: "Download Complete",
         description: "Your MP3 file has been downloaded successfully!",
       })
 
       // Add to conversion history
-      if (videoInfo) {
+      if (meta || videoInfo) {
+        const historyTitle = meta?.title || videoInfo?.title || 'YouTube Audio'
+        const historyDuration = meta?.duration || videoInfo?.duration || ''
+        const historyQuality = meta?.quality || `${selectedQuality} kbps`
         addToConversionHistory({
-          title: videoInfo.title || 'YouTube Audio',
-          duration: videoInfo.duration || '',
-          quality: `${selectedQuality} kbps`,
-          url: url,
+          title: historyTitle,
+          duration: historyDuration,
+          quality: historyQuality,
+          url: `/api/jobs/${jobId}?download=1`,
           jobId: jobId,
         })
       }
+
+      window.URL.revokeObjectURL(downloadUrl)
+      document.body.removeChild(a)
     } catch (error) {
       console.error('Error downloading file:', error)
       toast({
@@ -143,7 +149,7 @@ export function MainContent() {
         variant: "destructive",
       })
     }
-  }, [toast])
+  }, [selectedQuality, toast, videoInfo])
 
   // Function to reset conversion state
   const resetConversion = useCallback(() => {
@@ -184,6 +190,11 @@ export function MainContent() {
       // Start the conversion
       const result = await startYouTubeConversion(url, parseInt(selectedQuality))
       const { jobId, title, duration } = result
+      const historyMeta = {
+        title,
+        duration,
+        quality: `${selectedQuality} kbps`,
+      }
 
       setCurrentJobId(jobId)
       setVideoInfo({ title, duration })
@@ -215,7 +226,7 @@ export function MainContent() {
 
             // Auto-download after a short delay
             setTimeout(() => {
-              downloadFile(jobId)
+              downloadFile(jobId, historyMeta)
               resetConversion()
               setUrl("")
             }, 1000)
