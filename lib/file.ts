@@ -44,13 +44,17 @@ export async function createTempPath(originalName: string): Promise<{
 /**
  * Resolves a fileId back to its absolute path
  * @param fileId The file ID to resolve
- * @returns Absolute path if file exists, null otherwise
+ * @returns Promise resolving to absolute path if file exists, null otherwise
  */
-export function resolveTempPath(fileId: string): string | null {
+export async function resolveTempPath(fileId: string): Promise<string | null> {
   try {
-    // Find files in temp dir that start with fileId
-    const files = require('fs').readdirSync(TEMP_DIR);
-    const matchingFile = files.find((file: string) => file.startsWith(fileId));
+    // Find files in temp dir that exactly match fileId with extension
+    const files = await fs.readdir(TEMP_DIR);
+    const matchingFile = files.find((file: string) => {
+      // Extract the file ID part (everything before the extension)
+      const fileIdPart = file.substring(0, file.lastIndexOf('.'));
+      return fileIdPart === fileId;
+    });
     
     if (matchingFile) {
       return join(TEMP_DIR, matchingFile);

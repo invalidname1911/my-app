@@ -1,5 +1,5 @@
 /**
- * Test Phase 2 Step 5: Integration with file helpers (createTempPath, resolveTempPath)
+ * Test Phase 2 Step 5: Integration with file helpers (createTempPath, await resolveTempPath)
  * 
  * This test ensur    test('should maintain consistent file paths throughout YouTube download process', async () => {
       // Step 1: Create temp path for YouTube download
@@ -9,7 +9,7 @@
       await fs.writeFile(downloadInfo.absPath, 'test content');
       
       // Step 2: Resolve the same path
-      const resolvedPath = resolveTempPath(downloadInfo.fileId);
+      const resolvedPath = await resolveTempPath(downloadInfo.fileId);
       
       expect(resolvedPath).toBe(downloadInfo.absPath);
       
@@ -25,7 +25,7 @@
  * functions and create appropriate temporary file paths.
  */
 
-import { createTempPath, resolveTempPath, ensureTempDir, createOutputPath } from '../lib/file';
+import { createTempPath, await resolveTempPath, ensureTempDir, createOutputPath } from '../lib/file';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
@@ -87,13 +87,13 @@ describe('Phase 2 Step 5: File Helpers Integration', () => {
     });
   });
 
-  describe('resolveTempPath for YouTube files', () => {
+  describe('await resolveTempPath for YouTube files', () => {
     test('should resolve existing YouTube download files', async () => {
       // Create a test file
       const tempInfo = await createTempPath('youtube-test.webm');
       await fs.writeFile(tempInfo.absPath, 'test content');
       
-      const resolvedPath = resolveTempPath(tempInfo.fileId);
+      const resolvedPath = await resolveTempPath(tempInfo.fileId);
       
       expect(resolvedPath).toBe(tempInfo.absPath);
       
@@ -101,15 +101,15 @@ describe('Phase 2 Step 5: File Helpers Integration', () => {
       await fs.unlink(tempInfo.absPath);
     });
 
-    test('should return null for non-existent file IDs', () => {
+    test('should return null for non-existent file IDs', async () => {
       const fakeId = randomBytes(16).toString('hex');
-      const result = resolveTempPath(fakeId);
+      const result = await resolveTempPath(fakeId);
       
       expect(result).toBeNull();
     });
 
-    test('should handle malformed file IDs gracefully', () => {
-      const result = resolveTempPath('invalid-id');
+    test('should handle malformed file IDs gracefully', async () => {
+      const result = await resolveTempPath('invalid-id');
       expect(result).toBeNull();
     });
   });
@@ -143,7 +143,7 @@ describe('Phase 2 Step 5: File Helpers Integration', () => {
       await fs.writeFile(downloadInfo.absPath, 'test content');
 
       // Step 2: Resolve the same path
-      const resolvedPath = resolveTempPath(downloadInfo.fileId);
+      const resolvedPath = await resolveTempPath(downloadInfo.fileId);
       
       expect(resolvedPath).toBe(downloadInfo.absPath);
       
@@ -161,7 +161,7 @@ describe('Phase 2 Step 5: File Helpers Integration', () => {
       await fs.writeFile(downloadInfo.absPath, 'mock youtube content');
       
       // Verify file exists and can be resolved
-      const resolvedPath = resolveTempPath(downloadInfo.fileId);
+      const resolvedPath = await resolveTempPath(downloadInfo.fileId);
       expect(resolvedPath).toBe(downloadInfo.absPath);
       
       const fileExists = await fs.access(downloadInfo.absPath).then(() => true).catch(() => false);
@@ -196,7 +196,7 @@ describe('Phase 2 Step 5: File Helpers Integration', () => {
       const tempInfo = await createTempPath('youtube-deleted-test.webm');
       
       // File doesn't exist yet, so resolve should return null
-      const result = resolveTempPath(tempInfo.fileId);
+      const result = await resolveTempPath(tempInfo.fileId);
       expect(result).toBeNull();
     });
 

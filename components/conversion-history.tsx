@@ -47,7 +47,7 @@ export const addToConversionHistory = (conversion: Omit<ConversionItem, 'id' | '
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
 
   // Trigger a custom event to update the UI
-  window.dispatchEvent(new CustomEvent(HISTORY_UPDATED_EVENT, { detail: history }))
+  window.dispatchEvent(new CustomEvent(HISTORY_UPDATED_EVENT, { detail: { history } }))
 }
 
 export function ConversionHistory() {

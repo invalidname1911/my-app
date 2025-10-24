@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const inputPath = resolveTempPath(fileId);
+    const inputPath = await resolveTempPath(fileId);
     if (!inputPath) {
       return NextResponse.json(
         { error: 'Input file not found' },

@@ -223,7 +223,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
         // Clean up files on error
         const cleanupPromises = [];
 
-        if (tempFileExists && fs.existsSync(tempInfo.absPath)) {
+        // Always check for temp file existence, regardless of tempFileExists flag
+        // since partial files might exist even if download failed
+        if (fs.existsSync(tempInfo.absPath)) {
           cleanupPromises.push(
             new Promise<void>((resolve) => {
               try {
@@ -239,7 +241,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
           );
         }
 
-        if (outputFileExists && fs.existsSync(outputPath)) {
+        // Always check for output file existence, regardless of outputFileExists flag
+        // since partial files might exist even if conversion failed
+        if (fs.existsSync(outputPath)) {
           cleanupPromises.push(
             new Promise<void>((resolve) => {
               try {
