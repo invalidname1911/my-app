@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { ChevronLeft, Sun, Moon, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,6 +33,12 @@ export function MainContent() {
   const [errorMessage, setErrorMessage] = useState<string>("")
   const [videoInfo, setVideoInfo] = useState<{ title?: string; duration?: string; thumbnail?: string } | null>(null)
   const [selectedQuality, setSelectedQuality] = useState("320")
+
+  // Keep latest video info to avoid stale closures when scheduling downloads
+  const latestVideoInfoRef = useRef<typeof videoInfo>(null)
+  useEffect(() => {
+    latestVideoInfoRef.current = videoInfo
+  }, [videoInfo])
 
   // URL validation function
   const validateYouTubeUrl = useCallback((url: string): boolean => {
@@ -140,7 +146,8 @@ export function MainContent() {
       })
 
       // Add to conversion history with file size
-      const dataToUse = videoData || meta
+      // Prefer explicit params; fallback to latest stored info to avoid missing metadata
+      const dataToUse = videoData || meta || latestVideoInfoRef.current || undefined
 
       if (dataToUse) {
         // Get file size from the blob
@@ -257,8 +264,9 @@ export function MainContent() {
 
             // Auto-download after a short delay
             setTimeout(() => {
-              console.log('About to call downloadFile with jobId:', jobId, 'and url:', url, 'videoInfo:', videoInfo)
-              downloadFile(jobId, url, undefined, videoInfo || undefined)
+              const latest = latestVideoInfoRef.current || undefined
+              console.log('About to call downloadFile with jobId:', jobId, 'and url:', url, 'videoInfo:', latest)
+              downloadFile(jobId, url, undefined, latest)
               resetConversion()
               setUrl("")
             }, 1000)

@@ -7,15 +7,19 @@ import os from 'os';
 const getYtDlpPath = (): string => {
   // Try common installation paths
   const possiblePaths = [
+    process.env.YT_DLP_PATH || '',
     path.join(os.homedir(), 'AppData', 'Roaming', 'Python', 'Python313', 'Scripts', 'yt-dlp.exe'),
     path.join(os.homedir(), 'AppData', 'Roaming', 'Python', 'Python312', 'Scripts', 'yt-dlp.exe'),
     path.join(os.homedir(), 'AppData', 'Roaming', 'Python', 'Python311', 'Scripts', 'yt-dlp.exe'),
-    path.join(os.homedir(), '.local', 'bin', 'yt-dlp'), // Linux/Mac
+    path.join(os.homedir(), '.local', 'bin', 'yt-dlp'), // Linux/Mac (per-user)
+    '/opt/homebrew/bin/yt-dlp', // macOS (Apple Silicon Homebrew)
+    '/usr/local/bin/yt-dlp',    // macOS/Unix (Intel Homebrew or manual install)
+    '/usr/bin/yt-dlp',          // Linux
     'yt-dlp', // If in PATH
   ];
   
   for (const ytdlPath of possiblePaths) {
-    if (fs.existsSync(ytdlPath)) {
+    if (ytdlPath && fs.existsSync(ytdlPath)) {
       return ytdlPath;
     }
   }
@@ -114,9 +118,17 @@ export async function downloadYouTubeAudio(
         }
       } catch {}
       
-      const errorMessage = String(error?.message || error || '').toLowerCase();
-      
-      if (errorMessage.includes('video unavailable') || errorMessage.includes('private video')) {
+      const rawMsg = [
+        error?.message,
+        error?.shortMessage,
+        error?.stderr,
+      ].filter(Boolean).join(' ');
+      const errorMessage = String(rawMsg || error || '').toLowerCase();
+
+      // Common environment/binary issues
+      if (error?.code === 'ENOENT' || errorMessage.includes('enoent') || errorMessage.includes('not found')) {
+        throw new Error('yt-dlp binary not found. Please install yt-dlp and ensure it is in PATH');
+      } else if (errorMessage.includes('video unavailable') || errorMessage.includes('private video')) {
         throw new Error('Video is unavailable, private, or region-locked');
       } else if (errorMessage.includes('sign in to confirm') || errorMessage.includes('confirm your age')) {
         throw new Error('Video is age-restricted or requires sign-in');
@@ -125,7 +137,8 @@ export async function downloadYouTubeAudio(
       } else if (errorMessage.includes('403') || errorMessage.includes('forbidden')) {
         throw new Error('Download failed: Access forbidden');
       } else {
-        throw new Error(`Download failed: ${error?.message || 'unknown error'}`);
+        const finalMsg = (rawMsg && String(rawMsg).trim()) || 'unknown error';
+        throw new Error(`Download failed: ${finalMsg}`);
       }
     });
     
@@ -162,10 +175,13 @@ export async function getYouTubeVideoInfo(url: string): Promise<{
       author: info.uploader || info.channel || 'Unknown',
       videoId: info.id || ''
     };
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to get video info: ${error.message}`);
+  } catch (error: any) {
+    const rawMsg = [error?.message, error?.shortMessage, error?.stderr].filter(Boolean).join(' ');
+    const lower = String(rawMsg || error || '').toLowerCase();
+    if (error?.code === 'ENOENT' || lower.includes('enoent') || lower.includes('not found')) {
+      throw new Error('Failed to get video info: yt-dlp binary not found');
     }
-    throw new Error('Failed to get video info: Unknown error');
+    const finalMsg = (rawMsg && String(rawMsg).trim()) || 'Unknown error';
+    throw new Error(`Failed to get video info: ${finalMsg}`);
   }
 }
