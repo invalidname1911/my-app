@@ -326,11 +326,6 @@ export function MainContent() {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">Limited</span>
-          <span className="text-sm text-muted-foreground">Free Plan</span>
-          <Button variant="outline" size="sm" className="border-border text-foreground hover:text-foreground bg-transparent">
-            Upgrade
-          </Button>
           {mounted && (
             <Button
               variant="ghost"

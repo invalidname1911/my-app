@@ -43,3 +43,5 @@ claude.md
 .codex/config.toml
 .claude/
 WARP.md
+.opencode/
+*.js
