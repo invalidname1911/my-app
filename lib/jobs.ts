@@ -2,6 +2,7 @@ import { createReadStream, stat, readFileSync, writeFileSync, existsSync, readdi
 import { promisify } from 'util';
 import { randomBytes } from 'crypto';
 import { join } from 'path';
+import os from 'os';
 import { cleanupOldFiles } from './file';
 
 const statAsync = promisify(stat);
@@ -33,7 +34,7 @@ type PersistedJob = Omit<Job, 'createdAt' | 'updatedAt'> & {
   updatedAt: string;
 };
 
-const JOBS_DIR = join(process.cwd(), 'temp', 'jobs');
+const JOBS_DIR = join(os.tmpdir(), 'ffmpeg-web-temp', 'jobs');
 const JOB_FILE_EXTENSION = '.json';
 const JOB_STORE_GLOBAL_KEY = '__ffmpeg_web_job_store__';
 

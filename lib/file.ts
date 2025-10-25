@@ -1,8 +1,9 @@
 import { promises as fs } from 'fs';
 import { join, extname } from 'path';
 import { randomBytes } from 'crypto';
+import os from 'os';
 
-const TEMP_DIR = join(process.cwd(), 'temp');
+const TEMP_DIR = join(os.tmpdir(), 'ffmpeg-web-temp');
 
 /**
  * Ensures the temporary directory exists
