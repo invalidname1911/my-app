@@ -17,14 +17,14 @@ This refines the original plan for a small project. It focuses on the shortest p
 
 ## Tech Stack
 - Framework: Next.js (App Router) with Route Handlers in Node runtime
-- Media: `fluent-ffmpeg` + `ffmpeg-static`
+- Media: `@ts-ffmpeg/fluent-ffmpeg` + `ffmpeg-static`
 - Uploads: use `await request.formData()` (no `multer`) for simplicity
 - Storage: local temp dir (e.g., `./temp`), in‑memory job map
 - Language: TypeScript
 
 ## Minimal Dependencies
 ```bash
-pnpm add fluent-ffmpeg ffmpeg-static
+pnpm add @ts-ffmpeg/fluent-ffmpeg ffmpeg-static
 ```
 Optional (Phase 2):
 ```bash
@@ -41,7 +41,7 @@ my-app/
 │       ├── jobs/[id]/route.ts     # GET: job status (+ download URL when done)
 │       └── health/route.ts        # GET: basic health check
 ├── lib/
-│   ├── ffmpeg.ts                  # tiny wrapper around fluent-ffmpeg
+│   ├── ffmpeg.ts                  # tiny wrapper around @ts-ffmpeg/fluent-ffmpeg
 │   ├── jobs.ts                    # in-memory jobs registry
 │   ├── presets.ts                 # 2-3 simple presets
 │   └── file.ts                    # temp path helpers + cleanup
