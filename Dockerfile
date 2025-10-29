@@ -9,8 +9,9 @@ RUN pip3 install --no-cache-dir yt-dlp --break-system-packages
 # 2) Install deps with pnpm
 FROM base AS deps
 WORKDIR /app
+RUN npm i -g pnpm
 COPY package.json pnpm-lock.yaml ./
-RUN npm i -g pnpm && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prod=false
 
 # 3) Build Next.js (standalone)
 FROM base AS builder
@@ -25,12 +26,15 @@ RUN pnpm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV HOSTNAME="0.0.0.0"
 # Copy standalone server and static assets
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
+# Create temp directory with proper permissions
+RUN mkdir -p /tmp/ffmpeg-web && chmod 777 /tmp/ffmpeg-web
 USER node
-ENV PORT=${PORT:-3000}
-ENV HOST=0.0.0.0
+ENV PORT=3000
 ENV ENABLE_YOUTUBE=true
+EXPOSE 3000
 CMD ["node", "server.js"]
