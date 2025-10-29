@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { downloadYouTubeAudio, getYouTubeVideoInfo, isValidYouTubeUrl, sanitizeYouTubeUrl } from '@/lib/youtube';
-import { createTempPath, createOutputPath } from '@/lib/file';
+import { createTempPath, createOutputPath, resolveTempPath } from '@/lib/file';
 import { createJob, updateJob } from '@/lib/jobs';
 import { extractAudioMp3 } from '@/lib/ffmpeg';
 import fs from 'fs';
@@ -186,11 +186,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
           updateJob(job.id, { progress: Math.max(0, Math.min(50, mappedProgress)) });
         });
 
-        tempFileExists = fs.existsSync(tempInfo.absPath);
+        // Resolve the actual downloaded file path since yt-dlp may choose a different extension (e.g., .m4a)
+        const actualInputPath = (await resolveTempPath(tempInfo.fileId)) || tempInfo.absPath;
+
+        tempFileExists = fs.existsSync(actualInputPath);
         updateJob(job.id, { progress: 50 });
 
-        // Phase 2: Convert to MP3 (50-100% progress)  
-        await extractAudioMp3(tempInfo.absPath, outputPath, bitrate, (conversionProgress) => {
+        // Phase 2: Convert to MP3 (50-100% progress)
+        await extractAudioMp3(actualInputPath, outputPath, bitrate, (conversionProgress) => {
           // Map conversion progress to 50-100%
           const mappedProgress = 50 + Math.round(conversionProgress * 0.5);
           updateJob(job.id, { progress: Math.max(50, Math.min(100, mappedProgress)) });
@@ -201,9 +204,12 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
         // Clean up intermediate file
         if (tempFileExists) {
           try {
-            fs.unlinkSync(tempInfo.absPath);
+            const cleanupPath = (await resolveTempPath(tempInfo.fileId)) || tempInfo.absPath;
+            if (fs.existsSync(cleanupPath)) {
+              fs.unlinkSync(cleanupPath);
+            }
             if (process.env.NODE_ENV !== 'test') {
-              console.log(`Cleaned up intermediate file: ${tempInfo.absPath}`);
+              console.log(`Cleaned up intermediate file: ${cleanupPath}`);
             }
           } catch (cleanupError) {
             console.warn('Could not clean up intermediate file:', cleanupError);
@@ -225,20 +231,26 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
 
         // Always check for temp file existence, regardless of tempFileExists flag
         // since partial files might exist even if download failed
-        if (fs.existsSync(tempInfo.absPath)) {
-          cleanupPromises.push(
-            new Promise<void>((resolve) => {
-              try {
-                fs.unlinkSync(tempInfo.absPath);
-                if (process.env.NODE_ENV !== 'test') {
-                  console.log(`Cleaned up intermediate file after error: ${tempInfo.absPath}`);
+        {
+          const possibleCleanupPath = (await resolveTempPath(tempInfo.fileId)) || tempInfo.absPath;
+          if (fs.existsSync(possibleCleanupPath)) {
+            cleanupPromises.push(
+              new Promise<void>(async (resolve) => {
+                try {
+                  const cleanupPath = (await resolveTempPath(tempInfo.fileId)) || tempInfo.absPath;
+                  if (fs.existsSync(cleanupPath)) {
+                    fs.unlinkSync(cleanupPath);
+                  }
+                  if (process.env.NODE_ENV !== 'test') {
+                    console.log(`Cleaned up intermediate file after error: ${cleanupPath}`);
+                  }
+                } catch (cleanupError) {
+                  console.warn('Could not clean up intermediate file after error:', cleanupError);
                 }
-              } catch (cleanupError) {
-                console.warn('Could not clean up intermediate file after error:', cleanupError);
-              }
-              resolve();
-            })
-          );
+                resolve();
+              })
+            );
+          }
         }
 
         // Always check for output file existence, regardless of outputFileExists flag

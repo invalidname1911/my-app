@@ -4,7 +4,7 @@ ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg python3 python3-pip ca-certificates \
   && rm -rf /var/lib/apt/lists/*
-RUN pip3 install --no-cache-dir yt-dlp==2024.10.22 --break-system-packages
+RUN pip3 install --no-cache-dir yt-dlp --break-system-packages
 
 # 2) Install deps with pnpm
 FROM base AS deps
