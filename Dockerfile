@@ -31,10 +31,14 @@ ENV HOSTNAME="0.0.0.0"
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
-# Create temp directory with proper permissions
-RUN mkdir -p /tmp/ffmpeg-web && chmod 777 /tmp/ffmpeg-web
+# Copy startup scripts
+COPY --from=builder /app/bin ./bin
+# Make scripts executable and create temp directory with proper permissions
+RUN chmod +x /app/bin/*.sh && \
+    mkdir -p /tmp/ffmpeg-web && \
+    chmod 777 /tmp/ffmpeg-web
 USER node
 ENV PORT=3000
 ENV ENABLE_YOUTUBE=true
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["/app/bin/start.sh"]

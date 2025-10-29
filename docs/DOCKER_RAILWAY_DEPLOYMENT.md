@@ -32,14 +32,23 @@
  FROM base AS runner
  WORKDIR /app
  ENV NODE_ENV=production
+ ENV HOSTNAME="0.0.0.0"
  # Copy standalone server and static assets
  COPY --from=builder /app/.next/standalone ./
  COPY --from=builder /app/public ./public
  COPY --from=builder /app/.next/static ./.next/static
+ # Copy startup scripts (includes yt-dlp auto-updater)
+ COPY --from=builder /app/bin ./bin
+ # Make scripts executable and create temp directory with proper permissions
+ RUN chmod +x /app/bin/*.sh && \
+     mkdir -p /tmp/ffmpeg-web && \
+     chmod 777 /tmp/ffmpeg-web
  USER node
- ENV PORT=${PORT:-3000}
- ENV HOST=0.0.0.0
- CMD ["node", "server.js"]
+ ENV PORT=3000
+ ENV ENABLE_YOUTUBE=true
+ EXPOSE 3000
+ # Start script runs both Node.js server and yt-dlp background updater
+ CMD ["/app/bin/start.sh"]
  ```
 
  ## .dockerignore
@@ -56,6 +65,8 @@
  .env*
  Dockerfile
  pnpm-store
+ # Keep bin directory - contains startup scripts
+ !bin/
  ```
 
  ## Railway Setup
@@ -97,6 +108,13 @@ railway up
 - **Cold start behavior**: First request may take 10-30 seconds on Railway free tier
 - **Sleeping**: Free tier apps sleep after 15 minutes of inactivity
 - **Logs**: Use `railway logs` command or Railway dashboard for debugging
+
+### yt-dlp Auto-Update Feature
+- **Background updater**: Runs every 24 hours to keep yt-dlp current
+- **YouTube bot detection**: Latest yt-dlp versions include fixes for YouTube's changing API
+- **No rebuild needed**: Updates happen automatically while container is running
+- **Logging**: Check logs for `[yt-dlp-updater]` messages to verify updates
+- **Cookie support**: Set `YT_DLP_COOKIES` environment variable to path of cookies file for age-restricted videos
 
  ## Local Test (optional but recommended)
 
