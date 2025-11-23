@@ -1,0 +1,46 @@
+#model_provider = "fox"
+# 可配置gpt-5或gpt-5-codex
+#model = "gpt-5.1-codex-mini"
+# 可配置high medium low minimal
+#model_reasoning_effort = "medium"
+#disable_response_storage = true
+
+# foxcode配置
+#[model_providers.fox]
+#name = "fox"
+#base_url = "https://code.newcli.com/codex/v1"
+#wire_api = "responses"
+#requires_openai_auth = true
+
+#####
+
+[projects."/Users/invalidname1911/Documents/GitHub/playground"]
+trust_level = "trusted"
+
+[projects."/Users/invalidname1911/Documents/GitHub/playground/ffmpeg-web/my-app"]
+trust_level = "trusted"
+[mcp_servers.context7]
+args = ["-y", "@upstash/context7-mcp", "--api-key", "ctx7sk-f20ae730-c0bb-4466-933d-0f04967db7d8"]
+command = "npx"
+
+[mcp_servers.shadcn]
+command = "npx"
+args = ["shadcn@latest", "mcp"]
+
+[mcp_servers.supabase]
+disabled = false
+timeout = 60
+type = "stdio"
+command = "npx"
+args = [
+  "-y",
+  "@supabase/mcp-server-supabase",
+  "--read-only",
+  "--project-ref=jciqcqhpgsfhbexihrzs"
+]
+
+[mcp_servers.supabase.env]
+SUPABASE_ACCESS_TOKEN = "sbp_57f6a9fff271e0b0728c840dc8028a149abfc486"
+
+[notice]
+hide_gpt5_1_migration_prompt = true

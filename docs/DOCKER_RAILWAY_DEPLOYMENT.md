@@ -94,6 +94,31 @@ railway up
 - `NEXT_PUBLIC_*` variables for client-side usage
 - Any custom environment variables your app requires
 
+**YouTube Cookie Support (for age-restricted videos):**
+- **Option 1: Base64 cookies (recommended for Railway):**
+  1. Export cookies from your browser on your local machine:
+     ```bash
+     # For Chrome
+     yt-dlp --cookies-from-browser chrome --dump-cookies youtube-cookies.txt https://www.youtube.com
+     
+     # For Brave/Edge/Firefox/Safari, replace 'chrome' with 'brave', 'edge', 'firefox', or 'safari'
+     ```
+  2. Encode to base64:
+     ```bash
+     base64 youtube-cookies.txt | tr -d '\n' > youtube-cookies.b64
+     ```
+  3. In Railway dashboard → Variables, set:
+     - `YT_DLP_COOKIES_B64` = contents of `youtube-cookies.b64` file
+  4. Redeploy. The startup script will automatically decode and use the cookies.
+
+- **Option 2: Railway Volume (alternative):**
+  1. Create a Railway Volume in your project
+  2. Upload your cookies file to the volume
+  3. In Railway dashboard → Variables, set:
+     - `YT_DLP_COOKIES` = path to cookies file in volume (e.g., `/data/youtube-cookies.txt`)
+
+**Note:** Cookies may expire periodically. When videos fail with "sign in to confirm" errors, re-export cookies and update the Railway variable.
+
 **Build-time Configuration:**
 - Railway automatically detects and uses your Dockerfile
 - No additional build configuration needed beyond the Dockerfile itself
@@ -114,7 +139,7 @@ railway up
 - **YouTube bot detection**: Latest yt-dlp versions include fixes for YouTube's changing API
 - **No rebuild needed**: Updates happen automatically while container is running
 - **Logging**: Check logs for `[yt-dlp-updater]` messages to verify updates
-- **Cookie support**: Set `YT_DLP_COOKIES` environment variable to path of cookies file for age-restricted videos
+- **Cookie support**: Both `getYouTubeVideoInfo` and `downloadYouTubeAudio` use cookies when provided via `YT_DLP_COOKIES` (or `YT_DLP_COOKIES_B64`). See Environment Variables section above for setup instructions.
 
  ## Local Test (optional but recommended)
 

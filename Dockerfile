@@ -2,7 +2,7 @@
 FROM node:20-bookworm-slim AS base
 ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg python3 python3-pip ca-certificates \
+  ffmpeg python3 python3-pip ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --no-cache-dir yt-dlp --break-system-packages
 
@@ -31,12 +31,12 @@ ENV HOSTNAME="0.0.0.0"
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
-# Copy startup scripts
-COPY --from=builder /app/bin ./bin
+# Copy startup scripts directly from build context
+COPY bin ./bin
 # Make scripts executable and create temp directory with proper permissions
 RUN chmod +x /app/bin/*.sh && \
-    mkdir -p /tmp/ffmpeg-web && \
-    chmod 777 /tmp/ffmpeg-web
+  mkdir -p /tmp/ffmpeg-web && \
+  chmod 777 /tmp/ffmpeg-web
 USER node
 ENV PORT=3000
 ENV ENABLE_YOUTUBE=true

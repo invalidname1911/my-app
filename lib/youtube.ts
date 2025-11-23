@@ -238,7 +238,10 @@ export async function getYouTubeVideoInfo(url: string): Promise<{
     const sanitizedUrl = sanitizeYouTubeUrl(url);
     
     const ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
-    const info: any = await youtubedl(sanitizedUrl, {
+    
+    const cookiesFile = (process.env.YT_DLP_COOKIES || '').trim();
+    
+    const opts: any = {
       dumpSingleJson: true,
       noWarnings: true,
       skipDownload: true,
@@ -249,7 +252,13 @@ export async function getYouTubeVideoInfo(url: string): Promise<{
         `User-Agent: ${ua}`,
         'Referer: https://www.youtube.com'
       ],
-    } as any);
+    };
+    
+    if (cookiesFile) {
+      opts.cookies = cookiesFile;
+    }
+    
+    const info: any = await youtubedl(sanitizedUrl, opts);
     
     return {
       title: info.title || 'Unknown',

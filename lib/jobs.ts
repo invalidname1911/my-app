@@ -25,6 +25,7 @@ export interface Job {
   target: 'mp4' | 'mp3';
   preset?: 'web' | 'mobile';
   bitrate?: number; // For MP3 conversion
+  originalName?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -195,13 +196,15 @@ export function updateJob(id: string, patch: Partial<Job>): void {
  * @param target Target format (mp4 or mp3)
  * @param preset Optional preset for video conversion
  * @param bitrate Optional bitrate for MP3 conversion
+ * @param originalName Optional original filename
  * @returns New job object
  */
 export function createJob(
   inputPath: string,
   target: 'mp4' | 'mp3',
   preset?: 'web' | 'mobile',
-  bitrate?: number
+  bitrate?: number,
+  originalName?: string
 ): Job {
   const jobId = randomBytes(16).toString('hex');
   const now = new Date();
@@ -213,6 +216,7 @@ export function createJob(
     target,
     preset,
     bitrate,
+    originalName,
     createdAt: now,
     updatedAt: now
   };
@@ -228,31 +232,40 @@ export function createJob(
  */
 export async function streamOutput(id: string): Promise<Response> {
   const job = getJob(id);
-  
+
   if (!job) {
     return new Response('Job not found', { status: 404 });
   }
-  
+
   if (job.status !== 'done' || !job.outputPath) {
     return new Response('File not ready', { status: 400 });
   }
-  
+
   try {
     // Check if file exists and get stats
     const stats = await statAsync(job.outputPath);
-    
+
     // Create readable stream
     const stream = createReadStream(job.outputPath);
-    
+
     // Determine content type based on target format
-    const contentType = job.target === 'mp4' 
-      ? 'video/mp4' 
+    const contentType = job.target === 'mp4'
+      ? 'video/mp4'
       : 'audio/mpeg';
-    
+
     // Generate filename for download
     const extension = job.target;
-    const filename = `converted_${job.id}.${extension}`;
-    
+    let filename = `converted_${job.id}.${extension}`;
+
+    if (job.originalName) {
+      // Sanitize original name to be safe for filenames
+      // Remove special characters but keep spaces, dashes, underscores
+      const safeName = job.originalName.replace(/[^a-zA-Z0-9 \-_]/g, '').trim();
+      if (safeName) {
+        filename = `${safeName}_converted.${extension}`;
+      }
+    }
+
     // Create response with appropriate headers
     const response = new Response(stream as any, {
       status: 200,
@@ -263,7 +276,7 @@ export async function streamOutput(id: string): Promise<Response> {
         'Cache-Control': 'no-cache'
       }
     });
-    
+
     return response;
   } catch (error) {
     return new Response('File not found', { status: 404 });
@@ -286,7 +299,7 @@ export function getAllJobs(): Job[] {
 export function cleanupOldJobs(maxAgeHours: number = 24): number {
   const cutoffTime = new Date(Date.now() - (maxAgeHours * 60 * 60 * 1000));
   let removedCount = 0;
-  
+
   for (const [id, job] of jobs.entries()) {
     if (job.status === 'done' && job.updatedAt < cutoffTime) {
       jobs.delete(id);
@@ -294,7 +307,7 @@ export function cleanupOldJobs(maxAgeHours: number = 24): number {
       removedCount++;
     }
   }
-  
+
   return removedCount;
 }
 
@@ -339,11 +352,11 @@ export function getJobStats() {
     done: 0,
     error: 0
   };
-  
+
   for (const job of jobs.values()) {
     stats[job.status]++;
   }
-  
+
   return stats;
 }
 
@@ -351,17 +364,17 @@ export function getJobStats() {
 if (process.env.NODE_ENV === 'production') {
   const cleanup = async () => {
     console.log('Running cleanup task...');
-    
+
     const cleanedJobs = cleanupOldJobs(24);
     if (cleanedJobs > 0) {
       console.log(`Cleaned up ${cleanedJobs} old jobs.`);
     }
-    
+
     const cleanedFiles = await cleanupOldFiles(24);
     if (cleanedFiles > 0) {
       console.log(`Cleaned up ${cleanedFiles} old files.`);
     }
-    
+
     console.log('Cleanup task finished.');
   };
 
@@ -370,6 +383,6 @@ if (process.env.NODE_ENV === 'production') {
 
   // Initial cleanup on module load after a short delay
   setTimeout(cleanup, 5000);
-  
+
   console.log('Production cleanup scheduler initialized.');
 }
