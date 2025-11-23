@@ -10,5 +10,6 @@ coverage
 .env*
 Dockerfile
 pnpm-store
+.venv
 # Keep bin directory - contains startup scripts
 !bin/
