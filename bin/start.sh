@@ -16,6 +16,15 @@ else
   echo "[start] Warning: yt-dlp updater script not found at /app/bin/update-ytdlp.sh"
 fi
 
+# If YT_DLP_COOKIES_B64 is set, materialize it to a file and export YT_DLP_COOKIES
+if [ -n "$YT_DLP_COOKIES_B64" ]; then
+  echo "[start] Materializing yt-dlp cookies from base64"
+  COOKIES_PATH=/tmp/ytdlp-cookies.txt
+  echo "$YT_DLP_COOKIES_B64" | base64 -d > "$COOKIES_PATH" || {
+    echo "[start] Failed to decode YT_DLP_COOKIES_B64"; exit 1; }
+  export YT_DLP_COOKIES="$COOKIES_PATH"
+fi
+
 # Start Node.js server (foreground process)
 echo "[start] Starting Node.js server..."
 exec node server.js
