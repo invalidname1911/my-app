@@ -164,7 +164,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<YouTubeToMp3R
     const tempInfo = await createTempPath('youtube-download.webm');
 
     // Create job for tracking the entire process
-    const job = createJob(tempInfo.absPath, 'mp3');
+    const job = createJob(tempInfo.absPath, 'mp3', undefined, bitrate, videoInfo.title);
     console.log(`[${requestId}] Created job ${job.id}`);
 
     // Create output path for final MP3
