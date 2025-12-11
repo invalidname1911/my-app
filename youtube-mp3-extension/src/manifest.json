@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube to MP3",
+  "version": "1.0.0",
+  "description": "Convert YouTube videos to MP3 with one click",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "http://localhost:3000/*",
+    "https://*.railway.app/*"
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/watch*"],
+      "js": ["src/content/index.ts"],
+      "css": ["src/content/styles.css"]
+    }
+  ]
+}

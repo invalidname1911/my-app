@@ -47,3 +47,4 @@ WARP.md
 *.js
 package.json
 .mp4
+*/node_modules/*

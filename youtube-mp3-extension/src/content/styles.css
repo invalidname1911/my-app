@@ -1,0 +1,95 @@
+/* YouTube MP3 Download Button Styles */
+
+.yt-mp3-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  margin-right: 8px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 18px;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 36px;
+  white-space: nowrap;
+}
+
+.yt-mp3-download-btn:hover:not(:disabled) {
+  background-color: #cc0000;
+  transform: scale(1.02);
+}
+
+.yt-mp3-download-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.yt-mp3-download-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
+
+.yt-mp3-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Spinning animation for loading state */
+.yt-mp3-spin {
+  animation: yt-mp3-spin 1s linear infinite;
+}
+
+@keyframes yt-mp3-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Converting state */
+.yt-mp3-download-btn.yt-mp3-converting {
+  background-color: #065f46;
+}
+
+/* Done state */
+.yt-mp3-download-btn.yt-mp3-done {
+  background-color: #059669;
+}
+
+/* Error state */
+.yt-mp3-download-btn.yt-mp3-error {
+  background-color: #dc2626;
+}
+
+/* Dark mode support (YouTube dark theme) */
+html[dark] .yt-mp3-download-btn,
+[dark] .yt-mp3-download-btn {
+  background-color: #ff0000;
+}
+
+html[dark] .yt-mp3-download-btn:hover:not(:disabled),
+[dark] .yt-mp3-download-btn:hover:not(:disabled) {
+  background-color: #cc0000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .yt-mp3-download-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    height: 32px;
+  }
+  
+  .yt-mp3-icon {
+    width: 16px;
+    height: 16px;
+  }
+}

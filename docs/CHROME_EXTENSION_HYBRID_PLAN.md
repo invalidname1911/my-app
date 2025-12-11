@@ -322,31 +322,30 @@ export default nextConfig;
 ## Implementation Phases
 
 ### Phase 1: Backend CORS & toggles (~30 min)
-- [ ] Add CORS headers for extension origin (see above) in `next.config.mjs`
-- [ ] Ensure `ENABLE_YOUTUBE=true` in your deployment/runtime
-- [ ] Test API endpoints work from browser console on different origin
+- [x] Add CORS headers for extension origin (see above) in `next.config.mjs`
+- [x] Ensure `ENABLE_YOUTUBE=true` in your deployment/runtime
+- [x] Test API endpoints work from browser console on different origin
 
-### Phase 2: Extension Core (2-3 days)
-- [ ] Set up extension project structure (Vite + React + TypeScript)
-- [ ] Create manifest.json with required permissions
-- [ ] Implement background service worker with API integration
-- [ ] Implement content script for YouTube page button injection
-- [ ] Handle YouTube SPA navigation
+### Phase 2: Extension Core ✅ COMPLETE
+- [x] Set up extension project structure (Vite + React + TypeScript)
+- [x] Create manifest.json with required permissions
+- [x] Implement background service worker with API integration
+- [x] Implement content script for YouTube page button injection
+- [x] Handle YouTube SPA navigation
 
-### Phase 3: Popup UI (1-2 days)
-- [ ] Build popup with React
-- [ ] Conversion queue display
-- [ ] Download history (stored in chrome.storage)
-- [ ] Settings panel (quality, format preferences)
+### Phase 3: Popup UI ✅ COMPLETE (included in Phase 2)
+- [x] Build popup with React
+- [x] Conversion queue display
+- [x] Download history (stored in chrome.storage)
+- [x] Settings panel (quality, format preferences)
 
-### Phase 4: Polish & Publish (1-2 days)
+### Phase 4: Polish & Publish
 - [ ] Error handling and user feedback
 - [ ] Loading states and progress indicators
 - [ ] Extension icons and branding
 - [ ] Chrome Web Store listing preparation
 - [ ] Privacy policy (required for Web Store)
 
-**Total: ~5-7 days** (vs 6-9 days if backend wasn't ready)
 
 ## Extension Project Structure
 

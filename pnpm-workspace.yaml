@@ -1,3 +1,7 @@
+packages:
+  - '.'
+  - 'youtube-mp3-extension'
+
 ignoredBuiltDependencies:
   - '@tailwindcss/oxide'
 

@@ -1,31 +1,11 @@
 /**
- * Test Phase 2 Step 5: Integration with file helpers (createTempPath, await resolveTempPath)
+ * Test Phase 2 Step 5: Integration with file helpers (createTempPath, resolveTempPath)
  * 
- * This test ensur    test('should maintain consistent file paths throughout YouTube download process', async () => {
-      // Step 1: Create temp path for YouTube download
-      const downloadInfo = await createTempPath('youtube-download.webm');
-      
-      // Simulate file creation (like YouTube download)
-      await fs.writeFile(downloadInfo.absPath, 'test content');
-      
-      // Step 2: Resolve the same path
-      const resolvedPath = await resolveTempPath(downloadInfo.fileId);
-      
-      expect(resolvedPath).toBe(downloadInfo.absPath);
-      
-      // Step 3: Create output path for conversion
-      const outputPath = await createOutputPath('job-' + downloadInfo.fileId, 'mp3');
-      
-      expect(outputPath).toContain('temp');
-      expect(outputPath).toMatch(/_output\.mp3$/);
-      
-      // Cleanup
-      await fs.unlink(downloadInfo.absPath);
-    }); downloads properly integrate with the file helper
+ * This test ensures YouTube downloads properly integrate with the file helper
  * functions and create appropriate temporary file paths.
  */
 
-import { createTempPath, await resolveTempPath, ensureTempDir, createOutputPath } from '../lib/file';
+import { createTempPath, resolveTempPath, ensureTempDir, createOutputPath } from '../lib/file';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
