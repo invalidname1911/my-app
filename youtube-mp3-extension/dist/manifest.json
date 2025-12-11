@@ -23,10 +23,10 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-B_rRY9w7.js"
+        "assets/index.ts-hGwL32S-.js"
       ],
       "matches": [
-        "https://www.youtube.com/watch*"
+        "https://www.youtube.com/*"
       ],
       "css": [
         "src/content/styles.css"
@@ -39,7 +39,7 @@
         "https://www.youtube.com/*"
       ],
       "resources": [
-        "assets/index.ts-B_rRY9w7.js"
+        "assets/index.ts-hGwL32S-.js"
       ],
       "use_dynamic_url": false
     }

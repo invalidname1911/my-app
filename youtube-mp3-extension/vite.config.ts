@@ -35,11 +35,18 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Ensure no HMR/dev code in production
+    minify: true,
+    sourcemap: false,
     rollupOptions: {
       input: {
         popup: resolve(__dirname, 'src/popup/index.html'),
       },
     },
+  },
+  // Define globals for service worker compatibility
+  define: {
+    'import.meta.hot': 'undefined',
   },
   server: {
     port: 5173,

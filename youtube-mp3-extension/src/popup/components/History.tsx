@@ -25,8 +25,8 @@ export function History({ items, onRefresh }: HistoryProps) {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 text-gray-500">
-        <svg className="w-12 h-12 mb-2 text-gray-300" viewBox="0 0 24 24" fill="currentColor">
+      <div className="flex flex-col items-center justify-center h-48 text-white/60">
+        <svg className="w-12 h-12 mb-2 text-white/30" viewBox="0 0 24 24" fill="currentColor">
           <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
         </svg>
         <p className="text-sm">No download history</p>
@@ -39,7 +39,7 @@ export function History({ items, onRefresh }: HistoryProps) {
       <div className="flex justify-end">
         <button
           onClick={handleClear}
-          className="text-xs text-gray-500 hover:text-red-600 transition-colors"
+          className="text-xs text-white/60 hover:text-red-400 transition-colors"
         >
           Clear history
         </button>
@@ -67,24 +67,24 @@ function HistoryCard({
   const timeAgo = getTimeAgo(date);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+    <div className="glass-card rounded-xl p-3 animate-fade-in-up">
       <div className="flex gap-3">
         {item.thumbnail && (
           <img 
             src={item.thumbnail} 
             alt="" 
-            className="w-16 h-12 object-cover rounded"
+            className="w-16 h-12 object-cover rounded-lg"
           />
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-gray-900 truncate">
+          <h3 className="text-sm font-medium text-white truncate">
             {item.title}
           </h3>
-          <p className="text-xs text-gray-500 mt-0.5">{timeAgo}</p>
+          <p className="text-xs text-white/60 mt-0.5">{timeAgo}</p>
         </div>
         <button
           onClick={onRedownload}
-          className="self-center p-2 text-gray-400 hover:text-red-600 transition-colors"
+          className="self-center p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Download again"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
