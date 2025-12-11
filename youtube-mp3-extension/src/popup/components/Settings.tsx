@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ExtensionSettings } from '@/shared/types';
 import { updateSettings } from '@/shared/storage';
 import { BITRATE_OPTIONS, DEFAULT_API_BASE_URL } from '@/shared/config';

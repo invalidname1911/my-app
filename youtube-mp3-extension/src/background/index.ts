@@ -3,7 +3,6 @@
 import type { 
   ConversionState, 
   ConvertMessage, 
-  JobStatus,
   ExtensionMessage 
 } from '@/shared/types';
 import { startConversion, getJobStatus, getDownloadUrl, sanitizeFilename } from '@/shared/api';
@@ -17,10 +16,10 @@ import {
 import { POLL_INTERVAL, MAX_POLL_ATTEMPTS } from '@/shared/config';
 
 // Track active polling intervals
-const pollingIntervals = new Map<string, number>();
+const pollingIntervals = new Map<string, ReturnType<typeof setTimeout>>();
 
 // Listen for messages from content script and popup
-chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) => {
   if (message.action === 'convert') {
     handleConversion(message as ConvertMessage, sender.tab?.id);
     sendResponse({ received: true });
@@ -124,7 +123,7 @@ async function pollJobStatus(
       }
       
       // Continue polling
-      const intervalId = window.setTimeout(poll, POLL_INTERVAL);
+      const intervalId = setTimeout(poll, POLL_INTERVAL);
       pollingIntervals.set(jobId, intervalId);
       
     } catch (error: any) {

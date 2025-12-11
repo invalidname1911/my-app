@@ -1,12 +1,10 @@
-import React from 'react';
 import type { ConversionState } from '@/shared/types';
 
 interface QueueProps {
   jobs: ConversionState[];
-  onRefresh: () => void;
 }
 
-export function Queue({ jobs, onRefresh }: QueueProps) {
+export function Queue({ jobs }: QueueProps) {
   if (jobs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48 text-gray-500">

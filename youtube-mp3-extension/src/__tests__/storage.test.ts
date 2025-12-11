@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mockStorage } from './setup';
 import {
   getActiveJobs,
-  setActiveJobs,
   addActiveJob,
   updateActiveJob,
   removeActiveJob,

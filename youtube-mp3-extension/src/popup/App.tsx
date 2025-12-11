@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Queue } from './components/Queue';
 import { History } from './components/History';
 import { Settings } from './components/Settings';
@@ -74,7 +74,7 @@ export default function App() {
 
       {/* Content */}
       <main className="flex-1 overflow-auto p-4">
-        {activeTab === 'queue' && <Queue jobs={jobs} onRefresh={loadData} />}
+        {activeTab === 'queue' && <Queue jobs={jobs} />}
         {activeTab === 'history' && <History items={history} onRefresh={loadData} />}
         {activeTab === 'settings' && settings && (
           <Settings settings={settings} onUpdate={loadData} />

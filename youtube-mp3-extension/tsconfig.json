@@ -21,7 +21,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types", "../node_modules/@types"],
+    "types": ["chrome"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

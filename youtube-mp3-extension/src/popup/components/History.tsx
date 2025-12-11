@@ -1,4 +1,3 @@
-import React from 'react';
 import type { HistoryItem } from '@/shared/types';
 import { clearHistory } from '@/shared/storage';
 import { getDownloadUrl } from '@/shared/api';

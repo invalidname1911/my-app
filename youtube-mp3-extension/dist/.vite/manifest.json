@@ -10,7 +10,7 @@
     "name": "api"
   },
   "src/background/index.ts": {
-    "file": "assets/index.ts-COQB-Z6G.js",
+    "file": "assets/index.ts-eTaR5tpx.js",
     "name": "index.ts",
     "src": "src/background/index.ts",
     "isEntry": true,
@@ -25,7 +25,7 @@
     "isEntry": true
   },
   "src/popup/index.html": {
-    "file": "assets/popup-w_WVTQc4.js",
+    "file": "assets/popup-Cg9qck9t.js",
     "name": "popup",
     "src": "src/popup/index.html",
     "isEntry": true,
@@ -33,7 +33,7 @@
       "_api-_H_jcoD-.js"
     ],
     "css": [
-      "assets/popup-C_bCRiUE.css"
+      "assets/popup-DDxsEzYe.css"
     ]
   }
 }
