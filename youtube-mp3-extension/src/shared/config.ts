@@ -1,6 +1,6 @@
 // Extension configuration
 
-export const DEFAULT_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const DEFAULT_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://yt2mp3-ffmpeg.up.railway.app/';
 export const POLL_INTERVAL = 2000; // 2 seconds (matches web app)
 export const MAX_POLL_ATTEMPTS = 120; // 4 minutes max
 export const DEFAULT_BITRATE = 192; // kbps

@@ -5,17 +5,17 @@
     "src": "../../../../../../../@crx/manifest",
     "isEntry": true
   },
-  "_api-_H_jcoD-.js": {
-    "file": "assets/api-_H_jcoD-.js",
+  "_api-kFro3mmC.js": {
+    "file": "assets/api-kFro3mmC.js",
     "name": "api"
   },
   "src/background/index.ts": {
-    "file": "assets/index.ts-eTaR5tpx.js",
+    "file": "assets/index.ts-U5dbC-3I.js",
     "name": "index.ts",
     "src": "src/background/index.ts",
     "isEntry": true,
     "imports": [
-      "_api-_H_jcoD-.js"
+      "_api-kFro3mmC.js"
     ]
   },
   "src/content/index.ts": {
@@ -25,12 +25,12 @@
     "isEntry": true
   },
   "src/popup/index.html": {
-    "file": "assets/popup-CPMyhQY7.js",
+    "file": "assets/popup-m_rITJer.js",
     "name": "popup",
     "src": "src/popup/index.html",
     "isEntry": true,
     "imports": [
-      "_api-_H_jcoD-.js"
+      "_api-kFro3mmC.js"
     ],
     "css": [
       "assets/popup-CHqvDDIp.css"
