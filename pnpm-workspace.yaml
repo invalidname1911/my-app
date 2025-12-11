@@ -1,4 +1,9 @@
 ignoredBuiltDependencies:
   - '@tailwindcss/oxide'
+
 onlyBuiltDependencies:
+  - esbuild
+  - ffmpeg-static
   - sharp
+  - unrs-resolver
+  - youtube-dl-exec

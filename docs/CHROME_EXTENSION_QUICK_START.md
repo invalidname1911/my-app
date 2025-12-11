@@ -98,17 +98,6 @@ if (status === 'done') {
 }
 ```
 
-## Timeline
-
-- ✅ Backend: Already done
-- 🔧 CORS: 5 minutes
-- 📦 Extension setup: 2-3 days
-- 🎨 Popup UI: 1-2 days
-- 🧪 Testing & polish: 1-2 days
-- 📤 Chrome Web Store: 1 day
-
-**Total: ~5-7 days**
-
 ## Resources
 
 - Full plan: `CHROME_EXTENSION_HYBRID_PLAN.md`
